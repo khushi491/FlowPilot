@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { PlayCircle } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -76,8 +77,12 @@ export default function RunsPage() {
             </thead>
             <tbody>
               {runs.map((run) => (
-                <tr key={run.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3 font-mono text-xs text-slate-700">{run.id.slice(0, 8)}…</td>
+                <tr key={run.id} className="border-t border-slate-100 hover:bg-teal-50/40">
+                  <td className="px-4 py-3">
+                    <Link href={`/runs/${run.id}`} className="font-mono text-xs text-teal-700 hover:underline">
+                      {run.id.slice(0, 8)}…
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={run.status} />
                   </td>

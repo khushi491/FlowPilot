@@ -39,7 +39,7 @@ export default function WorkflowDetailPage() {
     setRunning(true);
     try {
       const run = await api.createRun(workflow.id, {});
-      window.location.href = `/runs?highlight=${run.id}`;
+      window.location.href = `/runs/${run.id}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start run");
       setRunning(false);
