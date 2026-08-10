@@ -12,8 +12,10 @@ export function ErrorState({
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
         <div>
-          <h3 className="font-semibold">Something went wrong</h3>
-          <p className="mt-1 text-sm text-rose-800">{message}</p>
+          <h3 className="font-semibold">We couldn&apos;t complete that request</h3>
+          <p className="mt-1 text-sm text-rose-800">
+            {message || "An unexpected error occurred. Check your connection and try again."}
+          </p>
           {onRetry ? (
             <button
               type="button"
