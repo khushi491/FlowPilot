@@ -4,11 +4,13 @@ import {
   FileText,
   LayoutDashboard,
   LayoutTemplate,
+  LogOut,
   PlayCircle,
   Workflow,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -21,6 +23,8 @@ const links = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200/80 bg-[#0f1c24] text-slate-100">
@@ -50,8 +54,19 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="border-t border-white/10 px-5 py-4 text-xs text-slate-400">
-        Visual agent orchestration
+      <div className="border-t border-white/10 px-4 py-4">
+        <p className="truncate px-1 text-xs text-slate-300">{user?.email}</p>
+        <button
+          type="button"
+          className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white"
+          onClick={() => {
+            logout();
+            router.replace("/login");
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
       </div>
     </aside>
   );

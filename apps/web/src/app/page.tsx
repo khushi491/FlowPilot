@@ -7,7 +7,7 @@ export default function HomePage() {
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
         <header className="flex items-center justify-between">
           <div className="font-display text-3xl tracking-tight">FlowPilot</div>
-          <Link href="/dashboard" className="btn-primary bg-orange-600 hover:bg-orange-700">
+          <Link href="/login" className="btn-primary bg-orange-600 hover:bg-orange-700">
             Open dashboard
             <ArrowRight className="h-4 w-4" />
           </Link>

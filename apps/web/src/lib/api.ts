@@ -69,13 +69,13 @@ export class ApiError extends Error {
 
 function authHeaders(): HeadersInit {
   if (typeof window === "undefined") {
-    return { "X-Demo-User": "1" };
+    return {};
   }
   const token = localStorage.getItem("flowpilot_token");
   if (token) {
     return { Authorization: `Bearer ${token}` };
   }
-  return { "X-Demo-User": "1" };
+  return {};
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {

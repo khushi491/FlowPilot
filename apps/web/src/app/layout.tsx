@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { AuthProvider, RequireAuth } from "@/lib/auth";
 import "./globals.css";
 
 const display = Fraunces({
@@ -24,7 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${display.variable} ${body.variable} antialiased`}>{children}</body>
+      <body className={`${display.variable} ${body.variable} antialiased`}>
+        <AuthProvider>
+          <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading…</div>}>
+            <RequireAuth>{children}</RequireAuth>
+          </Suspense>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("/templates", response_model=list[TemplateOut])
-async def get_templates():
+async def get_templates(_: User = Depends(get_current_user)):
     return [
         TemplateOut(
             id=t["id"],
