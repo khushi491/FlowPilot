@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#eef2f4"/>
+  <rect width="180" height="520" fill="#0f1c24"/>
+  <text x="28" y="48" fill="#fff" font-family="Georgia, serif" font-size="24">FlowPilot</text>
+  <rect x="210" y="30" width="220" height="28" rx="6" fill="#0f766e"/>
+  <rect x="210" y="90" width="200" height="90" rx="12" fill="#fff"/>
+  <rect x="430" y="90" width="200" height="90" rx="12" fill="#fff"/>
+  <rect x="650" y="90" width="200" height="90" rx="12" fill="#fff"/>
+  <rect x="210" y="210" width="640" height="260" rx="12" fill="#fff"/>
+  <text x="230" y="250" fill="#0f172a" font-family="Arial" font-size="18">Dashboard overview</text>
+</svg>
