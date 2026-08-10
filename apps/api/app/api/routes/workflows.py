@@ -1,13 +1,14 @@
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, parse_uuid
 from app.core.errors import AppError
 from app.db.session import get_db
+from app.engine.executor import enqueue_run
 from app.models.user import User
 from app.models.workflow import Workflow, WorkflowRun, WorkflowVersion
 from app.schemas.workflow import RunCreate, WorkflowCreate, WorkflowOut, WorkflowRunOut, WorkflowUpdate
@@ -130,6 +131,7 @@ async def delete_workflow(
 async def create_run(
     workflow_id: str,
     payload: RunCreate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -145,6 +147,9 @@ async def create_run(
     db.add(run)
     await db.commit()
     await db.refresh(run)
+
+    # Execute asynchronously in-process. Celery worker task is available for scaled deploys.
+    background_tasks.add_task(enqueue_run, run.id)
     return run
 
 
