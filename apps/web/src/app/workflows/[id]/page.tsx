@@ -7,9 +7,8 @@ import { ArrowLeft, Play } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { WorkflowEditor } from "@/components/workflow/WorkflowEditor";
 import { api, Workflow } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
 
 export default function WorkflowDetailPage() {
   const params = useParams<{ id: string }>();
@@ -49,8 +48,8 @@ export default function WorkflowDetailPage() {
 
   return (
     <DashboardShell
-      title={workflow?.name || "Workflow"}
-      subtitle="Inspect definition and launch a run. Visual editor arrives next."
+      title={workflow?.name || "Workflow builder"}
+      subtitle="Drag nodes, connect edges, configure, and save a validated workflow graph."
       actions={
         <div className="flex gap-2">
           <Link href="/workflows" className="btn-secondary">
@@ -67,28 +66,7 @@ export default function WorkflowDetailPage() {
       {loading ? <LoadingState /> : null}
       {error ? <ErrorState message={error} onRetry={load} /> : null}
       {!loading && !error && workflow ? (
-        <div className="space-y-4">
-          <div className="panel p-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <StatusBadge status={workflow.status} />
-              <span className="text-sm text-slate-500">Updated {formatDate(workflow.updated_at)}</span>
-            </div>
-            <p className="mt-3 text-slate-700">{workflow.description || "No description"}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {(workflow.tags || []).map((tag) => (
-                <span key={tag} className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="panel p-5">
-            <h2 className="font-semibold text-slate-900">Workflow JSON</h2>
-            <pre className="mt-3 overflow-auto rounded-lg bg-slate-950 p-4 text-xs text-teal-100">
-              {JSON.stringify(workflow.definition, null, 2)}
-            </pre>
-          </div>
-        </div>
+        <WorkflowEditor workflow={workflow} onSaved={setWorkflow} />
       ) : null}
     </DashboardShell>
   );
