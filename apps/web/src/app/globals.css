@@ -3,10 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --fp-ink: #0f1c24;
-  --fp-teal: #0f766e;
-  --fp-sand: #f4f7f8;
-  --fp-accent: #ea580c;
+  --lego-red: #e3000b;
+  --lego-yellow: #ffd500;
+  --lego-blue: #0055bf;
+  --lego-green: #00a651;
+  --lego-orange: #f57c00;
+  --lego-ink: #111111;
+  --lego-base: #f2f2f2;
+  --lego-plate: #ffffff;
+  --lego-border: #1a1a1a;
 }
 
 html,
@@ -15,25 +20,119 @@ body {
 }
 
 body {
-  color: var(--fp-ink);
-  background: var(--fp-sand);
-  font-family: var(--font-body), "Segoe UI", sans-serif;
+  color: var(--lego-ink);
+  background-color: var(--lego-base);
+  font-family: var(--font-body), "Nunito", sans-serif;
 }
 
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), "Fredoka", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Classic studded baseplate texture */
+.lego-studs {
+  background-color: #e8e8e8;
+  background-image: radial-gradient(circle at center, #d4d4d4 0 28%, transparent 30%);
+  background-size: 28px 28px;
+}
+
+.lego-studs-red {
+  background-color: var(--lego-red);
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.22) 0 28%, transparent 30%);
+  background-size: 36px 36px;
+}
+
+.lego-studs-yellow {
+  background-color: var(--lego-yellow);
+  background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.12) 0 28%, transparent 30%);
+  background-size: 36px 36px;
+}
+
+.lego-studs-blue {
+  background-color: var(--lego-blue);
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0 28%, transparent 30%);
+  background-size: 28px 28px;
+}
+
+@keyframes brick-pop {
+  0% {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes stud-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-brick-pop {
+  animation: brick-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.animate-stud-bounce {
+  animation: stud-bounce 1.8s ease-in-out infinite;
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-800 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition disabled:opacity-50;
+    background: var(--lego-red);
+    border: 3px solid var(--lego-border);
+    box-shadow: 0 4px 0 #8b0008;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 3px 0 #8b0008;
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #8b0008;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold uppercase tracking-wide transition;
+    background: var(--lego-yellow);
+    color: var(--lego-ink);
+    border: 3px solid var(--lego-border);
+    box-shadow: 0 4px 0 #b89600;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(1px);
+    box-shadow: 0 3px 0 #b89600;
   }
 
   .panel {
-    @apply rounded-xl border border-slate-200 bg-white/90 shadow-sm;
+    @apply rounded-md bg-white;
+    border: 3px solid var(--lego-border);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .input-lego {
+    @apply w-full rounded-md px-3 py-2.5 text-sm outline-none;
+    border: 3px solid var(--lego-border);
+    background: #fffef5;
+  }
+
+  .input-lego:focus {
+    box-shadow: 0 0 0 3px rgba(255, 213, 0, 0.55);
+  }
+
+  .brick-chip {
+    @apply inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide;
+    border: 2px solid var(--lego-border);
   }
 }

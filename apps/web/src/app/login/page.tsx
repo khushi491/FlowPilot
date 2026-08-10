@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { BrickRow, LegoStud } from "@/components/ui/LegoStud";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,25 +30,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#134e4a,_#0f1c24_70%)] px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h1 className="font-display text-3xl text-slate-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-slate-600">Sign in to your FlowPilot workspace.</p>
-        {error ? <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
-        <label className="mt-4 block text-sm">
-          <span className="mb-1 block text-slate-600">Email</span>
+    <div className="flex min-h-screen items-center justify-center lego-studs-blue px-4 py-10">
+      <form onSubmit={onSubmit} className="panel w-full max-w-md bg-lego-yellow p-6 animate-brick-pop">
+        <div className="mb-3 flex items-center gap-2">
+          <LegoStud color="red" />
+          <div className="font-display text-2xl font-bold">FlowPilot</div>
+        </div>
+        <BrickRow className="mb-4" />
+        <h1 className="font-display text-3xl font-bold text-lego-ink">Click in</h1>
+        <p className="mt-1 text-sm font-semibold text-black/70">Sign in to your brick-built workspace.</p>
+        {error ? (
+          <p className="mt-3 rounded-brick border-[3px] border-black bg-lego-red px-3 py-2 text-sm font-bold text-white">
+            {error}
+          </p>
+        ) : null}
+        <label className="mt-4 block text-sm font-bold">
+          <span className="mb-1 block">Email</span>
           <input
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="input-lego"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </label>
-        <label className="mt-3 block text-sm">
-          <span className="mb-1 block text-slate-600">Password</span>
+        <label className="mt-3 block text-sm font-bold">
+          <span className="mb-1 block">Password</span>
           <input
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="input-lego"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -55,13 +65,13 @@ export default function LoginPage() {
             minLength={8}
           />
         </label>
-        <button type="submit" className="btn-primary mt-5 w-full justify-center" disabled={loading}>
-          {loading ? "Signing in..." : "Sign in"}
+        <button type="submit" className="btn-primary mt-5 w-full" disabled={loading}>
+          {loading ? "Snapping..." : "Sign in"}
         </button>
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <p className="mt-4 text-center text-sm font-semibold text-black/70">
           No account?{" "}
-          <Link href="/signup" className="text-teal-700 hover:underline">
-            Create one
+          <Link href="/signup" className="font-extrabold text-lego-blue underline">
+            Build one
           </Link>
         </p>
       </form>

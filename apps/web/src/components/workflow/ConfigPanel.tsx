@@ -14,8 +14,8 @@ export function ConfigPanel({
 }) {
   if (!node) {
     return (
-      <div className="w-80 shrink-0 border-l border-slate-200 bg-white p-4 text-sm text-slate-500">
-        Select a node to configure its settings.
+      <div className="w-80 shrink-0 border-l-[3px] border-black bg-white p-4 text-sm font-semibold text-black/50">
+        Select a brick to configure its studs and settings.
       </div>
     );
   }
@@ -28,17 +28,17 @@ export function ConfigPanel({
   };
 
   return (
-    <div className="w-80 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4">
+    <div className="w-80 shrink-0 overflow-y-auto border-l-[3px] border-black bg-lego-yellow/30 p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900">Configuration</h3>
-        <button type="button" className="text-xs text-slate-500 hover:text-slate-800" onClick={onClose}>
+        <h3 className="font-display text-lg font-bold text-lego-ink">Brick config</h3>
+        <button type="button" className="text-xs font-bold uppercase text-black/60 hover:text-black" onClick={onClose}>
           Close
         </button>
       </div>
-      <label className="mb-3 block text-sm">
-        <span className="mb-1 block text-slate-600">Label</span>
+      <label className="mb-3 block text-sm font-bold">
+        <span className="mb-1 block">Label</span>
         <input
-          className="w-full rounded-md border border-slate-300 px-2 py-1.5"
+          className="input-lego"
           value={data.label}
           onChange={(e) => onChange(node.id, { label: e.target.value })}
         />
@@ -106,20 +106,16 @@ function Field({
   textarea?: boolean;
 }) {
   return (
-    <label className="mb-3 block text-sm">
-      <span className="mb-1 block text-slate-600">{label}</span>
+    <label className="mb-3 block text-sm font-bold">
+      <span className="mb-1 block">{label}</span>
       {textarea ? (
         <textarea
-          className="min-h-24 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+          className="input-lego min-h-24 font-mono text-xs"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
-        <input
-          className="w-full rounded-md border border-slate-300 px-2 py-1.5"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        <input className="input-lego" value={value} onChange={(e) => onChange(e.target.value)} />
       )}
     </label>
   );

@@ -1,54 +1,86 @@
 import Link from "next/link";
-import { ArrowRight, GitBranch, Radar, Sparkles } from "lucide-react";
+import { ArrowRight, Blocks, GitBranch, Radar } from "lucide-react";
+import { BrickRow, LegoStud } from "@/components/ui/LegoStud";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_#134e4a_0%,_#0f1c24_55%,_#081016_100%)] text-white">
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
-        <header className="flex items-center justify-between">
-          <div className="font-display text-3xl tracking-tight">FlowPilot</div>
-          <Link href="/login" className="btn-primary bg-orange-600 hover:bg-orange-700">
-            Open dashboard
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </header>
+    <div className="min-h-screen bg-lego-ink text-white">
+      <section className="relative min-h-screen overflow-hidden">
+        <div className="absolute inset-0 lego-studs-red" />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/50 to-transparent" />
 
-        <section className="relative mt-16 flex flex-1 flex-col justify-center pb-20">
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(120deg,transparent_0%,rgba(45,212,191,0.12)_40%,transparent_70%)]" />
-          <p className="mb-4 inline-flex w-fit items-center gap-2 text-sm text-teal-200">
-            <Sparkles className="h-4 w-4" />
-            Visual AI-agent orchestration
-          </p>
-          <h1 className="font-display max-w-3xl text-5xl leading-tight md:text-6xl">
-            Design LLM workflows you can run, watch, and trust.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-slate-300">
-            Drag-and-drop nodes for prompts, APIs, RAG retrieval, approvals, and branching logic —
-            then execute with live traces and cost visibility.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/workflows" className="btn-primary bg-teal-500 hover:bg-teal-400 text-slate-950">
-              Build a workflow
-            </Link>
-            <Link href="/templates" className="btn-secondary border-white/20 bg-white/10 text-white hover:bg-white/15">
-              Browse templates
-            </Link>
-          </div>
-          <div className="mt-16 grid gap-4 md:grid-cols-3">
-            {[
-              { icon: GitBranch, title: "Graph builder", text: "Compose agent steps visually with React Flow." },
-              { icon: Radar, title: "Live observability", text: "Stream node status, retries, tokens, and cost." },
-              { icon: Sparkles, title: "RAG-ready", text: "Upload docs, embed chunks, retrieve context." },
-            ].map(({ icon: Icon, title, text }) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <Icon className="h-5 w-5 text-teal-300" />
-                <h2 className="mt-3 font-semibold">{title}</h2>
-                <p className="mt-1 text-sm text-slate-300">{text}</p>
+        <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
+          <header className="flex items-center justify-between animate-brick-pop">
+            <div className="flex items-center gap-3">
+              <LegoStud color="yellow" className="h-6 w-6" />
+              <div className="font-display text-4xl font-bold tracking-tight drop-shadow-[3px_3px_0_rgba(0,0,0,0.35)]">
+                FlowPilot
               </div>
-            ))}
+            </div>
+            <Link href="/login" className="btn-secondary">
+              Open dashboard
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </header>
+
+          <div className="relative mt-20 flex flex-1 flex-col justify-center pb-24 md:mt-28">
+            <BrickRow className="mb-6 animate-brick-pop" />
+            <h1 className="font-display max-w-3xl text-5xl font-bold leading-[1.05] drop-shadow-[4px_4px_0_rgba(0,0,0,0.35)] md:text-7xl animate-brick-pop">
+              Snap AI workflows together like bricks.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg font-semibold text-white/90 animate-brick-pop">
+              Build LLM agents with drag-and-drop nodes, then click them into place and watch them run.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 animate-brick-pop">
+              <Link href="/login" className="btn-secondary">
+                Start building
+              </Link>
+              <Link
+                href="/templates"
+                className="inline-flex items-center gap-2 rounded-md border-[3px] border-black bg-lego-blue px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white shadow-brick-blue transition hover:translate-y-px"
+              >
+                Browse templates
+              </Link>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <section className="lego-studs border-t-[6px] border-black px-6 py-16 text-lego-ink">
+        <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3">
+          {[
+            {
+              icon: GitBranch,
+              title: "Brick builder",
+              text: "Snap prompt, API, RAG, and approval bricks into a runnable graph.",
+              color: "bg-lego-yellow",
+            },
+            {
+              icon: Radar,
+              title: "Live traces",
+              text: "Watch each brick light up with status, retries, tokens, and cost.",
+              color: "bg-lego-blue text-white",
+            },
+            {
+              icon: Blocks,
+              title: "RAG blocks",
+              text: "Upload docs, chunk them, and click retrieval into your LLM brick.",
+              color: "bg-lego-green text-white",
+            },
+          ].map(({ icon: Icon, title, text, color }) => (
+            <div key={title} className={`rounded-brick border-[3px] border-black p-5 shadow-brick ${color}`}>
+              <div className="mb-3 flex gap-1.5">
+                <LegoStud color="red" className="h-3.5 w-3.5" />
+                <LegoStud color="yellow" className="h-3.5 w-3.5" />
+                <LegoStud color="blue" className="h-3.5 w-3.5" />
+              </div>
+              <Icon className="h-6 w-6" />
+              <h2 className="mt-3 font-display text-2xl font-bold">{title}</h2>
+              <p className="mt-2 text-sm font-semibold opacity-90">{text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

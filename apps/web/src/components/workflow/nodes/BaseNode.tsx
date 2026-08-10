@@ -4,14 +4,14 @@ import { Handle, Position, NodeProps } from "@xyflow/react";
 import { WorkflowNodeData } from "@/lib/workflow-types";
 import { cn } from "@/lib/utils";
 
-const accent: Record<string, string> = {
-  llm: "border-teal-500",
-  api: "border-sky-500",
-  database: "border-amber-500",
-  condition: "border-violet-500",
-  rag: "border-emerald-500",
-  approval: "border-orange-500",
-  output: "border-slate-700",
+const brick: Record<string, string> = {
+  llm: "bg-lego-yellow",
+  api: "bg-lego-blue text-white",
+  database: "bg-lego-orange text-white",
+  condition: "bg-white",
+  rag: "bg-lego-green text-white",
+  approval: "bg-lego-red text-white",
+  output: "bg-lego-ink text-white",
 };
 
 export function BaseNode({ data, selected }: NodeProps) {
@@ -19,14 +19,19 @@ export function BaseNode({ data, selected }: NodeProps) {
   return (
     <div
       className={cn(
-        "min-w-[180px] rounded-xl border-2 bg-white px-3 py-2 shadow-sm",
-        accent[nodeData.type] || "border-slate-300",
-        selected && "ring-2 ring-teal-400 ring-offset-2"
+        "min-w-[190px] rounded-brick border-[3px] border-black px-3 py-2 shadow-brick",
+        brick[nodeData.type] || "bg-white",
+        selected && "ring-4 ring-lego-yellow ring-offset-2"
       )}
     >
-      <Handle type="target" position={Position.Left} className="!bg-slate-500" />
-      <div className="text-[10px] uppercase tracking-wide text-slate-500">{nodeData.type}</div>
-      <div className="text-sm font-semibold text-slate-900">{nodeData.label}</div>
+      <div className="mb-1 flex gap-1">
+        <span className="h-2.5 w-2.5 rounded-full border border-black/40 bg-white/70" />
+        <span className="h-2.5 w-2.5 rounded-full border border-black/40 bg-white/70" />
+        <span className="h-2.5 w-2.5 rounded-full border border-black/40 bg-white/70" />
+      </div>
+      <Handle type="target" position={Position.Left} className="!h-3 !w-3 !border-2 !border-black !bg-lego-yellow" />
+      <div className="text-[10px] font-extrabold uppercase tracking-wide opacity-80">{nodeData.type}</div>
+      <div className="text-sm font-extrabold">{nodeData.label}</div>
       {nodeData.type === "condition" ? (
         <>
           <Handle
@@ -34,18 +39,22 @@ export function BaseNode({ data, selected }: NodeProps) {
             id="true"
             position={Position.Right}
             style={{ top: "35%" }}
-            className="!bg-emerald-500"
+            className="!h-3 !w-3 !border-2 !border-black !bg-lego-green"
           />
           <Handle
             type="source"
             id="false"
             position={Position.Right}
             style={{ top: "70%" }}
-            className="!bg-rose-500"
+            className="!h-3 !w-3 !border-2 !border-black !bg-lego-red"
           />
         </>
       ) : (
-        <Handle type="source" position={Position.Right} className="!bg-slate-500" />
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="!h-3 !w-3 !border-2 !border-black !bg-lego-yellow"
+        />
       )}
     </div>
   );

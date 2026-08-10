@@ -1,24 +1,27 @@
 import { cn } from "@/lib/utils";
 
 const styles: Record<string, string> = {
-  draft: "bg-slate-100 text-slate-700",
-  active: "bg-emerald-100 text-emerald-800",
-  paused: "bg-amber-100 text-amber-800",
-  failed: "bg-rose-100 text-rose-800",
-  queued: "bg-sky-100 text-sky-800",
-  running: "bg-indigo-100 text-indigo-800",
-  completed: "bg-emerald-100 text-emerald-800",
+  draft: "bg-white text-lego-ink",
+  active: "bg-lego-green text-white",
+  paused: "bg-lego-orange text-white",
+  failed: "bg-lego-red text-white",
+  queued: "bg-lego-blue text-white",
+  running: "bg-lego-yellow text-lego-ink",
+  completed: "bg-lego-green text-white",
+  pending: "bg-white text-lego-ink",
+  skipped: "bg-white text-black/60",
+  waiting_approval: "bg-lego-orange text-white",
 };
 
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium capitalize",
-        styles[status] || "bg-slate-100 text-slate-700"
+        "brick-chip capitalize",
+        styles[status] || "bg-white text-lego-ink"
       )}
     >
-      {status}
+      {status.replaceAll("_", " ")}
     </span>
   );
 }

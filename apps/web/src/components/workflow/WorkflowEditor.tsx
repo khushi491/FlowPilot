@@ -199,23 +199,23 @@ export function WorkflowEditor({
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-4 py-3">
+    <div className="flex h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-brick border-[3px] border-black bg-white shadow-brick">
+      <div className="flex flex-wrap items-center gap-3 border-b-[3px] border-black bg-lego-yellow px-4 py-3">
         <input
-          className="min-w-[220px] flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium"
+          className="input-lego min-w-[220px] flex-1 font-bold"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <button type="button" className="btn-primary" onClick={() => void save()} disabled={saving}>
           <Save className="h-4 w-4" />
-          {saving ? "Saving..." : "Save workflow"}
+          {saving ? "Snapping..." : "Save bricks"}
         </button>
       </div>
       {(errors.length > 0 || message) && (
-        <div className="border-b border-slate-200 px-4 py-2 text-sm">
-          {message ? <p className="text-emerald-700">{message}</p> : null}
+        <div className="border-b-[3px] border-black px-4 py-2 text-sm font-semibold">
+          {message ? <p className="text-lego-green">Brick set saved.</p> : null}
           {errors.length > 0 ? (
-            <ul className="list-disc pl-5 text-rose-700">
+            <ul className="list-disc pl-5 text-lego-red">
               {errors.map((e) => (
                 <li key={e}>{e}</li>
               ))}
@@ -225,7 +225,11 @@ export function WorkflowEditor({
       )}
       <div className="flex min-h-0 flex-1">
         <NodePalette onAdd={addNode} />
-        <div className="relative min-w-0 flex-1" onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
+        <div
+          className="relative min-w-0 flex-1 lego-studs"
+          onDrop={onDrop}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -239,7 +243,7 @@ export function WorkflowEditor({
             }
             fitView
           >
-            <Background gap={18} size={1} />
+            <Background gap={28} size={2} color="#cfcfcf" />
             <MiniMap />
             <Controls />
           </ReactFlow>
