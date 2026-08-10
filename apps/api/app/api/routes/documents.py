@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.workflow import DocumentOut
+from app.services.rag import process_document
 
 router = APIRouter()
 settings = get_settings()
@@ -47,12 +48,6 @@ async def upload_document(
     storage_path = upload_root / f"{doc_id}_{safe_name}"
     storage_path.write_bytes(raw)
 
-    text_content = ""
-    if safe_name.lower().endswith((".txt", ".md")) or content_type.startswith("text/"):
-        text_content = raw.decode("utf-8", errors="ignore")
-    elif safe_name.lower().endswith(".pdf") or content_type == "application/pdf":
-        text_content = f"[PDF uploaded: {safe_name}] Text extraction will run during RAG processing."
-
     document = Document(
         id=doc_id,
         user_id=user.id,
@@ -60,13 +55,22 @@ async def upload_document(
         content_type=content_type,
         size_bytes=len(raw),
         storage_path=str(storage_path),
-        text_content=text_content,
+        text_content="",
         chunk_count=0,
         meta={"status": "uploaded"},
     )
     db.add(document)
     await db.commit()
     await db.refresh(document)
+
+    try:
+        document = await process_document(db, document)
+    except Exception as exc:  # noqa: BLE001
+        document.meta = {**(document.meta or {}), "status": "failed", "error": str(exc)}
+        await db.commit()
+        await db.refresh(document)
+        raise AppError(f"Failed to process document: {exc}", status_code=500, code="rag_failed") from exc
+
     return document
 
 
