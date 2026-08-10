@@ -1,0 +1,10 @@
+[project]
+name = "flowpilot-api"
+version = "1.0.0"
+description = "FlowPilot FastAPI backend"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

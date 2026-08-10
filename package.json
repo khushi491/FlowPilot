@@ -1,0 +1,21 @@
+{
+  "name": "flowpilot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Visual AI-agent workflow builder",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build:web": "npm run build --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web --if-present && cd apps/api && python -m pytest -q",
+    "build": "npm run build:web",
+    "dev:api": "cd apps/api && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
