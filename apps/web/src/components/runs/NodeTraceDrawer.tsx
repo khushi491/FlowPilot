@@ -27,6 +27,8 @@ export function NodeTraceDrawer({
 }) {
   if (!node) return null;
 
+  const mocked = Boolean(node.output_data && node.output_data.mocked);
+
   return (
     <div className="fixed inset-y-0 right-0 z-40 w-full max-w-md border-l border-slate-200 bg-white shadow-xl">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
@@ -44,6 +46,11 @@ export function NodeTraceDrawer({
           <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs capitalize text-slate-600">
             {node.node_type}
           </span>
+          {mocked ? (
+            <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+              Mocked output
+            </span>
+          ) : null}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Retries" value={String(node.retry_count ?? 0)} />

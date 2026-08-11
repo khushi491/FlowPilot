@@ -49,6 +49,9 @@ export function ConfigPanel({
         <>
           <Field label="Prompt" value={String(config.prompt || "")} onChange={(v) => setConfig("prompt", v)} textarea />
           <Field label="Model" value={String(config.model || "")} onChange={(v) => setConfig("model", v)} />
+          <p className="mb-3 text-xs text-black/60">
+            Default mode returns mock LLM output unless a real API key is configured on the server.
+          </p>
         </>
       ) : null}
       {data.type === "api" ? (
@@ -64,15 +67,25 @@ export function ConfigPanel({
         </>
       ) : null}
       {data.type === "database" ? (
-        <Field label="Query" value={String(config.query || "")} onChange={(v) => setConfig("query", v)} textarea />
+        <>
+          <Field label="Query" value={String(config.query || "")} onChange={(v) => setConfig("query", v)} textarea />
+          <p className="mb-3 text-xs text-black/60">
+            This brick is demo-only: it never executes SQL and always returns a mock row.
+          </p>
+        </>
       ) : null}
       {data.type === "condition" ? (
-        <Field
-          label="Expression"
-          value={String(config.expression || "")}
-          onChange={(v) => setConfig("expression", v)}
-          textarea
-        />
+        <>
+          <Field
+            label="Expression"
+            value={String(config.expression || "")}
+            onChange={(v) => setConfig("expression", v)}
+            textarea
+          />
+          <p className="mb-3 text-xs text-black/60">
+            Safe DSL only (comparisons / and / or / not). Example: score &gt; 50
+          </p>
+        </>
       ) : null}
       {data.type === "rag" ? (
         <>
@@ -82,6 +95,9 @@ export function ConfigPanel({
             value={String(config.top_k ?? 4)}
             onChange={(v) => setConfig("top_k", Number(v) || 4)}
           />
+          <p className="mb-3 text-xs text-black/60">
+            Uses mock embeddings by default; set USE_MOCK_EMBEDDINGS=false with an API key for real vectors.
+          </p>
         </>
       ) : null}
       {data.type === "approval" ? (

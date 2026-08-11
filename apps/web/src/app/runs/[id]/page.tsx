@@ -179,7 +179,12 @@ export default function RunDetailPage() {
                     >
                       <div>
                         <div className="text-sm font-medium text-slate-900">{node.node_id}</div>
-                        <div className="text-xs capitalize text-slate-500">{node.node_type}</div>
+                        <div className="text-xs capitalize text-slate-500">
+                          {node.node_type}
+                          {node.output_data && (node.output_data as { mocked?: boolean }).mocked
+                            ? " · mocked"
+                            : ""}
+                        </div>
                       </div>
                       <StatusBadge status={node.status} />
                     </button>

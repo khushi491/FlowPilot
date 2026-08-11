@@ -17,8 +17,8 @@ export const NODE_CATALOG: Array<{
 }> = [
   {
     type: "llm",
-    label: "LLM Prompt",
-    description: "Call an LLM with a prompt template",
+    label: "LLM Prompt (mock by default)",
+    description: "Call an LLM with a prompt template (uses mock responses unless OpenAI is configured)",
     defaults: { prompt: "", model: "gpt-4o-mini", temperature: 0.2 },
   },
   {
@@ -29,20 +29,20 @@ export const NODE_CATALOG: Array<{
   },
   {
     type: "database",
-    label: "Database Query",
-    description: "Run a parameterized SQL query",
+    label: "Mock Database",
+    description: "Demo-only mock SQL result (does not run real queries)",
     defaults: { query: "SELECT 1", params: {} },
   },
   {
     type: "condition",
     label: "Condition",
-    description: "Branch based on an expression",
+    description: "Branch with a safe expression (e.g. score > 50)",
     defaults: { expression: "input.value == true" },
   },
   {
     type: "rag",
     label: "RAG Search",
-    description: "Retrieve relevant document chunks",
+    description: "Retrieve document chunks (mock embeddings by default)",
     defaults: { query: "", top_k: 4 },
   },
   {

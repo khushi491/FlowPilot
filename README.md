@@ -94,7 +94,7 @@ FlowPilot/
 
 ### Visual builder
 - Drag-and-drop brick nodes on a studded canvas
-- Node types: **LLM**, **API**, **Database**, **Condition**, **RAG**, **Human Approval**, **Output**
+- Node types: **LLM** (mock by default), **API**, **Mock Database**, **Condition**, **RAG** (mock embeddings by default), **Human Approval**, **Output**
 - Right-side config panel + save-time validation
 
 ### Execution engine

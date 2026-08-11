@@ -150,7 +150,14 @@ async def execute_rag(
             }
         ]
     context_text = "\n\n".join(c.get("content", "") for c in chunks)
-    return {"query": query, "chunks": chunks, "context": context_text, "top_k": top_k}
+    mocked = settings.use_mock_embeddings or not settings.openai_api_key or retriever is None
+    return {
+        "query": query,
+        "chunks": chunks,
+        "context": context_text,
+        "top_k": top_k,
+        "mocked": mocked,
+    }
 
 
 async def execute_approval(config: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:

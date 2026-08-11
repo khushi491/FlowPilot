@@ -32,6 +32,11 @@ export function BaseNode({ data, selected }: NodeProps) {
       <Handle type="target" position={Position.Left} className="!h-3 !w-3 !border-2 !border-black !bg-lego-yellow" />
       <div className="text-[10px] font-extrabold uppercase tracking-wide opacity-80">{nodeData.type}</div>
       <div className="text-sm font-extrabold">{nodeData.label}</div>
+      {nodeData.type === "database" || nodeData.type === "llm" || nodeData.type === "rag" ? (
+        <div className="mt-1 text-[9px] font-extrabold uppercase tracking-wide opacity-70">
+          {nodeData.type === "database" ? "Always mock" : "Mock by default"}
+        </div>
+      ) : null}
       {nodeData.type === "condition" ? (
         <>
           <Handle
