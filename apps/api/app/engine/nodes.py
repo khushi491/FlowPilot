@@ -1,7 +1,5 @@
-import ast
 import asyncio
 import json
-import math
 import re
 from typing import Any, Callable, Optional
 from urllib.parse import urlencode
@@ -9,6 +7,7 @@ from urllib.parse import urlencode
 import httpx
 
 from app.core.config import get_settings
+from app.engine.expressions import ExpressionError, evaluate_condition_expression
 from app.engine.url_safety import assert_safe_url
 
 settings = get_settings()
@@ -121,26 +120,15 @@ async def execute_database(config: dict[str, Any], context: dict[str, Any]) -> d
     }
 
 
-def _safe_eval_expression(expression: str, context: dict[str, Any]) -> bool:
-    # Very small expression evaluator for demo conditions.
-    # Supports comparisons against context via `input.*` or direct names.
-    env = {"input": context, "context": context, "math": math, **context}
-    tree = ast.parse(expression, mode="eval")
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Call, ast.Attribute, ast.Name, ast.Load, ast.Expression, ast.Compare, ast.BoolOp, ast.UnaryOp, ast.BinOp, ast.Constant, ast.And, ast.Or, ast.Eq, ast.NotEq, ast.Gt, ast.GtE, ast.Lt, ast.LtE, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Not, ast.USub)):
-            continue
-        if isinstance(node, ast.Subscript):
-            continue
-        raise ValueError(f"Unsupported expression element: {type(node).__name__}")
-    result = eval(compile(tree, "<condition>", "eval"), {"__builtins__": {}}, env)  # noqa: S307
-    return bool(result)
-
-
 async def execute_condition(config: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+    # Evaluate the expression against context keys directly — do not template-interpolate
+    # untrusted context into source code before parsing.
     expression = str(config.get("expression") or "True")
-    rendered = render_template(expression, context)
-    value = _safe_eval_expression(rendered, context)
-    return {"expression": rendered, "result": value, "branch": "true" if value else "false"}
+    try:
+        value = evaluate_condition_expression(expression, context)
+    except ExpressionError as exc:
+        raise ValueError(str(exc)) from exc
+    return {"expression": expression, "result": value, "branch": "true" if value else "false"}
 
 
 async def execute_rag(
