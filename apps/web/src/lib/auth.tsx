@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { clearToken, getStoredToken, persistToken } from "@/lib/token";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const TOKEN_KEY = "flowpilot_token";
 
 export interface AuthUser {
   id: string;
@@ -35,14 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getStoredToken();
     if (!token) {
+      clearToken();
       setLoading(false);
       return;
     }
+    // Keep cookie in sync for users who already had localStorage-only sessions.
+    persistToken(token);
     fetchMe(token)
       .then(setUser)
-      .catch(() => localStorage.removeItem(TOKEN_KEY))
+      .catch(() => clearToken())
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Login failed");
-    localStorage.setItem(TOKEN_KEY, data.access_token);
+    persistToken(data.access_token);
     setUser(await fetchMe(data.access_token));
   };
 
@@ -66,12 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Signup failed");
-    localStorage.setItem(TOKEN_KEY, data.access_token);
+    persistToken(data.access_token);
     setUser(await fetchMe(data.access_token));
   };
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+    clearToken();
     setUser(null);
   };
 

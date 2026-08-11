@@ -1,4 +1,5 @@
 import type { RunStatus, WorkflowDefinition, WorkflowStatus } from "@flowpilot/shared";
+import { getStoredToken } from "@/lib/token";
 
 export type { RunStatus, WorkflowStatus } from "@flowpilot/shared";
 
@@ -76,10 +77,7 @@ export class ApiError extends Error {
 }
 
 function authHeaders(): HeadersInit {
-  if (typeof window === "undefined") {
-    return {};
-  }
-  const token = localStorage.getItem("flowpilot_token");
+  const token = getStoredToken();
   if (token) {
     return { Authorization: `Bearer ${token}` };
   }
