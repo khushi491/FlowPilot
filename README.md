@@ -1,70 +1,130 @@
 # FlowPilot
 
-**Visual AI-agent workflow builder** for creating, running, and monitoring LLM-powered automation with drag-and-drop nodes, realtime traces, and RAG document retrieval.
+**Snap AI agent workflows together like bricks.**
+
+FlowPilot is a full-stack visual workflow builder for designing, running, and observing LLM-powered automations. Drag nodes onto a canvas, connect them, execute the graph, and watch live traces stream in over WebSockets.
 
 ![FlowPilot](docs/screenshots/hero.svg)
 
+**Live stack:** Next.js · FastAPI · PostgreSQL + pgvector · Redis · Docker · GitHub Actions
+
+Demo login after setup: `demo@flowpilot.dev` / `demo12345`
+
+---
+
 ## Screenshots
 
-| Dashboard | Workflow builder | Live run traces |
-|-----------|------------------|-----------------|
-| ![Dashboard](docs/screenshots/dashboard.svg) | ![Builder](docs/screenshots/builder.svg) | ![Runs](docs/screenshots/runs.svg) |
+| Landing / brand | Dashboard | Builder | Run traces |
+|-----------------|-----------|---------|------------|
+| Lego-themed hero | Workflow list + status | React Flow brick canvas | Live timeline + node traces |
 
-> Tip: replace the SVG placeholders in `docs/screenshots/` with real product captures for your portfolio.
+![Dashboard](docs/screenshots/dashboard.svg)
+![Builder](docs/screenshots/builder.svg)
+![Runs](docs/screenshots/runs.svg)
+
+> Replace the SVG placeholders in `docs/screenshots/` with real app captures for a stronger portfolio README.
+
+---
+
+## Why this project
+
+Built as a recruiter-friendly portfolio app that demonstrates:
+
+- Product-minded frontend UI (Lego brick design system)
+- Graph-based workflow modeling with React Flow
+- Async execution engine with retries, timeouts, and branching
+- Realtime observability over WebSockets
+- RAG pipeline with chunking + embeddings (mock or OpenAI)
+- JWT auth with per-user data isolation
+- Dockerized local stack + CI
+
+---
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  Browser[Next.js Web] -->|REST + WS| API[FastAPI]
+  UI[Next.js Web<br/>React Flow] -->|REST + JWT| API[FastAPI]
+  UI -->|WebSocket| API
+  API --> Engine[Execution Engine]
   API --> PG[(PostgreSQL + pgvector)]
   API --> Redis[(Redis)]
   Redis --> Worker[Celery Worker]
-  Worker --> PG
-  API --> Engine[Execution Engine]
   Engine --> LLM[Mock / OpenAI LLM]
   Engine --> RAG[RAG Retriever]
   RAG --> PG
 ```
 
-```
+```text
 FlowPilot/
 ├── apps/
-│   ├── web/                 # Next.js + React Flow UI
-│   └── api/                 # FastAPI + execution engine
+│   ├── web/                 # Next.js 14 + Tailwind + React Flow (Lego UI)
+│   └── api/                 # FastAPI + SQLAlchemy + execution engine
 ├── packages/shared/         # Shared TypeScript types
-├── docker/                  # Docker docs/assets
+├── docker/                  # Docker notes
 ├── docs/screenshots/        # README visuals
-├── .github/workflows/       # CI pipeline
-└── docker-compose.yml
+├── .github/workflows/ci.yml # Lint, test, build, Docker image checks
+├── docker-compose.yml       # web, api, worker, postgres, redis
+└── .env.example
 ```
 
-## Tech Stack
+---
 
-- **Frontend:** Next.js, TypeScript, Tailwind CSS, React Flow, lucide-react
-- **Backend:** FastAPI, SQLAlchemy, Alembic, Pydantic
-- **Database:** PostgreSQL + pgvector
-- **Queue:** Redis + Celery
-- **Realtime:** WebSockets
-- **Auth:** JWT (signup / login / protected routes)
-- **Deploy:** Docker Compose + GitHub Actions
+## Tech stack
+
+| Layer | Tools |
+|-------|--------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS, React Flow (`@xyflow/react`), lucide-react |
+| Backend | FastAPI, SQLAlchemy (async), Alembic, Pydantic, Celery |
+| Data | PostgreSQL 16 + pgvector, Redis |
+| Auth | JWT (signup / login / protected routes) |
+| Realtime | WebSockets (`/ws/runs/{id}`) |
+| DevOps | Docker Compose, GitHub Actions |
+
+---
 
 ## Features
 
-- Drag-and-drop visual workflow builder
-- Node types: LLM, API, Database, Condition, RAG, Human Approval, Output
-- Workflow validation before save
-- Dependency-ordered execution with retries + timeouts
-- Realtime run/node status streaming
-- Node-level traces, tokens, cost estimates, duration
-- Document upload (TXT/MD/PDF), chunking, embeddings, RAG retrieval
-- Built-in templates (Resume Reviewer, Support Auto-Reply, Research Summarizer)
-- Multi-user JWT auth with per-user data isolation
-- Dockerized local development and CI checks
+### Visual builder
+- Drag-and-drop brick nodes on a studded canvas
+- Node types: **LLM**, **API**, **Database**, **Condition**, **RAG**, **Human Approval**, **Output**
+- Right-side config panel + save-time validation
 
-## Local Setup
+### Execution engine
+- Loads workflow JSON and validates the graph
+- Topological / dependency-aware execution
+- Retries + per-node timeouts
+- Stops on failed required nodes
+- Human-approval nodes pause the run
 
-### Option A — Docker (recommended)
+### Observability
+- Run history with status filters
+- Node-level traces (input/output/logs)
+- Token usage + estimated cost
+- Duration + retry counts
+- Live status streaming over WebSockets
+
+### RAG
+- Upload TXT / MD / PDF
+- Text extraction, chunking, embeddings
+- pgvector-ready storage
+- Mock embeddings by default (no API key required)
+
+### Templates
+1. **Resume Reviewer Agent** — LLM → Output  
+2. **Customer Support Auto-Reply Agent** — RAG → LLM → Approval → Output  
+3. **Research Summarizer Agent** — API → LLM → Output  
+
+### Auth & multi-user
+- Signup / login / logout
+- Protected dashboard routes
+- Workflows, runs, and documents scoped to the authenticated user
+
+---
+
+## Quick start (Docker)
+
+Requires Docker Desktop.
 
 ```bash
 git clone https://github.com/khushi491/FlowPilot.git
@@ -73,93 +133,154 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- Web: http://localhost:3000
-- API: http://localhost:8000
-- Swagger: http://localhost:8000/docs
+| Service | URL |
+|---------|-----|
+| Web app | http://localhost:3000 |
+| API | http://localhost:8000 |
+| Swagger | http://localhost:8000/docs |
 
-Seed a demo account (after API is up):
+The API container runs migrations and seeds demo data on startup.
+
+**Demo account**
+
+```text
+Email:    demo@flowpilot.dev
+Password: demo12345
+```
+
+Re-seed manually if needed:
 
 ```bash
 docker compose exec api python -m app.scripts.seed
 ```
 
-Demo login: `demo@flowpilot.dev` / `demo12345`
+---
 
-### Option B — Manual
+## Local development (without full Docker app stack)
+
+### 1) Infra
 
 ```bash
-# Infra
 docker compose up -d postgres redis
+```
 
-# API
+Postgres is exposed on host port **5433** (see `.env.example`).
+
+### 2) API
+
+```bash
 cd apps/api
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 alembic upgrade head
+python -m app.scripts.seed
 uvicorn app.main:app --reload --port 8000
+```
 
-# Web (new terminal, repo root)
+### 3) Web (repo root)
+
+```bash
 npm install
 npm run dev --workspace=apps/web
 ```
 
-## Environment Variables
+Open http://localhost:3000 and sign in with the demo account.
 
-See [`.env.example`](.env.example).
+> Use **npm** (workspaces). pnpm/yarn are not configured for this monorepo.
+
+---
+
+## Environment variables
+
+Copy [`.env.example`](.env.example) → `.env`.
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | Async SQLAlchemy URL |
+| `DATABASE_URL` | Async SQLAlchemy URL (`postgresql+asyncpg://...`) |
 | `DATABASE_URL_SYNC` | Alembic sync URL |
-| `REDIS_URL` | Celery broker |
-| `JWT_SECRET` | Auth signing secret |
-| `NEXT_PUBLIC_API_URL` | Browser API base URL |
-| `NEXT_PUBLIC_WS_URL` | Browser WebSocket base URL |
-| `USE_MOCK_LLM` | Use mock LLM responses |
-| `USE_MOCK_EMBEDDINGS` | Use deterministic local embeddings |
-| `OPENAI_API_KEY` | Optional real LLM/embeddings |
+| `REDIS_URL` | Redis / Celery broker |
+| `JWT_SECRET` | JWT signing secret |
+| `CORS_ORIGINS` | Allowed frontend origins |
+| `NEXT_PUBLIC_API_URL` | Browser API base (`http://localhost:8000`) |
+| `NEXT_PUBLIC_WS_URL` | Browser WebSocket base (`ws://localhost:8000`) |
+| `USE_MOCK_LLM` | `true` = mock LLM (default) |
+| `USE_MOCK_EMBEDDINGS` | `true` = deterministic local embeddings (default) |
+| `OPENAI_API_KEY` | Optional real LLM / embedding calls |
 
-## API Documentation
+For local API against Docker Postgres, keep host port **5433** in `.env`.  
+Inside Compose, services talk to `postgres:5432`.
 
-Interactive docs: `http://localhost:8000/docs`
+---
 
-Core endpoints:
+## API overview
 
-- `POST /auth/signup`, `POST /auth/login`, `GET /auth/me`
-- `POST/GET/PUT/DELETE /workflows`
-- `POST /workflows/{id}/runs`
-- `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/nodes`
-- `POST /documents/upload`, `GET /documents`, `DELETE /documents/{id}`
-- `GET /templates`, `POST /templates/{id}/use`
-- `WS /ws/runs/{id}`
+Interactive docs: http://localhost:8000/docs
 
-## Demo Workflow Examples
+| Area | Endpoints |
+|------|-----------|
+| Auth | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
+| Workflows | `POST/GET/PUT/DELETE /workflows` |
+| Runs | `POST /workflows/{id}/runs`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/nodes` |
+| Documents | `POST /documents/upload`, `GET /documents`, `DELETE /documents/{id}` |
+| Templates | `GET /templates`, `POST /templates/{id}/use` |
+| Realtime | `WS /ws/runs/{id}` |
+| Health | `GET /health` |
 
-1. **Resume Reviewer Agent** — LLM review + structured output
-2. **Customer Support Auto-Reply** — RAG → LLM → human approval → output
-3. **Research Summarizer** — API fetch → LLM summary → output
+---
 
-Create from **Templates**, open the builder, click **Run**, and watch live traces on the run page.
+## Try a demo flow
+
+1. Sign in with the demo account  
+2. Open **Templates** → **Use template** (e.g. Resume Reviewer)  
+3. Open the workflow → tweak bricks → **Save**  
+4. Click **Run**  
+5. Watch the live timeline + node traces on the run page  
+6. Upload a doc under **Documents** and try the Support Auto-Reply template  
+
+---
 
 ## Scripts
 
 ```bash
+# Frontend
 npm run lint
-npm run test
+npm run test:web
 npm run build
-cd apps/api && python -m pytest -q
+
+# Backend
+npm run test:api
+# or: cd apps/api && python -m pytest -q
+
+# Full stack
 docker compose up --build
 ```
 
-## Future Improvements
+CI (`.github/workflows/ci.yml`) runs lint, tests, frontend build, and Docker image builds on every push/PR to `main`.
 
-- Visual condition branch highlighting during runs
-- Persistent approval inbox UI + resume-from-pause
-- OpenTelemetry tracing export
-- Team workspaces and role-based access
-- Native tool/function-calling nodes
-- Managed cloud deploy (Fly.io / Render / AWS)
+---
+
+## Design notes
+
+The UI uses a **Lego brick theme**:
+
+- Classic brick colors (red / yellow / blue / green)
+- Studded baseplate backgrounds
+- Thick bordered “brick” panels and buttons
+- Color-coded workflow nodes
+
+---
+
+## Future improvements
+
+- Resume paused runs from a human-approval inbox
+- Highlight active condition branches during execution
+- OpenTelemetry / structured tracing export
+- Team workspaces + roles
+- Function-calling / tool nodes
+- One-click cloud deploy (Fly.io / Render / AWS)
+
+---
 
 ## License
 
