@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     embedding_dimensions: int = 1536
     use_celery: bool = False
     max_upload_bytes: int = 10 * 1024 * 1024  # 10 MB
+    seed_on_start: bool = False
+    rate_limit_auth_per_minute: int = 20
+    rate_limit_upload_per_minute: int = 10
+    rate_limit_run_per_minute: int = 30
 
     @property
     def cors_origin_list(self) -> List[str]:

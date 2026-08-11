@@ -40,6 +40,8 @@ services:
       CORS_ORIGINS: http://localhost:3000
       UPLOAD_DIR: /app/uploads
       USE_CELERY: "true"
+      APP_ENV: development
+      SEED_ON_START: "true"
     ports:
       - "8000:8000"
     volumes:

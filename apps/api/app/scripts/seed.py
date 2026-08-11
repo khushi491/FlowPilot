@@ -19,8 +19,14 @@ DEMO_EMAIL = "demo@flowpilot.dev"
 DEMO_PASSWORD = "demo12345"
 
 
-async def seed() -> None:
+async def seed(*, force: bool = False) -> None:
     settings = get_settings()
+    if not force and not settings.is_dev_env and not settings.seed_on_start:
+        raise SystemExit(
+            "Refusing to seed outside development. "
+            "Set APP_ENV=development or SEED_ON_START=true (or pass --force)."
+        )
+
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 
     async with AsyncSessionLocal() as db:
@@ -100,4 +106,7 @@ async def seed() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(seed())
+    import sys
+
+    force = "--force" in sys.argv
+    asyncio.run(seed(force=force))

@@ -19,4 +19,4 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head && python -m app.scripts.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && if [ \"$SEED_ON_START\" = \"true\" ]; then python -m app.scripts.seed; fi && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

@@ -148,16 +148,16 @@ docker compose up --build
 | API | http://localhost:8000 |
 | Swagger | http://localhost:8000/docs |
 
-The API container runs migrations and seeds demo data on startup.
+The API container runs migrations on startup. Demo seeding runs only when `SEED_ON_START=true` (enabled in Compose for local demo; off by default).
 
-**Demo account**
+**Demo account** (after seeding)
 
 ```text
 Email:    demo@flowpilot.dev
 Password: demo12345
 ```
 
-Re-seed manually if needed:
+Re-seed manually if needed (dev only, or with `--force`):
 
 ```bash
 docker compose exec api python -m app.scripts.seed
