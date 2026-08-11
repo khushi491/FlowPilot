@@ -95,43 +95,43 @@ export default function RunsPage() {
       {!loading && !error && runs.length > 0 ? (
         <div>
           <div className="panel overflow-hidden">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
+            <table className="table-brick">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 font-medium">Run</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Tokens</th>
-                  <th className="px-4 py-3 font-medium">Cost</th>
-                  <th className="px-4 py-3 font-medium">Retries</th>
-                  <th className="px-4 py-3 font-medium">Duration</th>
-                  <th className="px-4 py-3 font-medium">Error</th>
-                  <th className="px-4 py-3 font-medium">Created</th>
+                  <th>Run</th>
+                  <th>Status</th>
+                  <th>Tokens</th>
+                  <th>Cost</th>
+                  <th>Retries</th>
+                  <th>Duration</th>
+                  <th>Error</th>
+                  <th>Created</th>
                 </tr>
               </thead>
               <tbody>
                 {runs.map((run) => (
-                  <tr key={run.id} className="border-t border-slate-100 hover:bg-teal-50/40">
-                    <td className="px-4 py-3">
+                  <tr key={run.id}>
+                    <td>
                       <Link href={`/runs/${run.id}`} className="font-mono text-xs text-teal-700 hover:underline">
                         {run.id.slice(0, 8)}…
                       </Link>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <StatusBadge status={run.status} />
                     </td>
-                    <td className="px-4 py-3">{run.total_tokens}</td>
-                    <td className="px-4 py-3">${run.estimated_cost_usd.toFixed(4)}</td>
-                    <td className="px-4 py-3">{run.retry_count}</td>
-                    <td className="px-4 py-3">{run.duration_ms != null ? `${run.duration_ms} ms` : "—"}</td>
-                    <td className="max-w-[220px] truncate px-4 py-3 text-rose-700" title={run.error_message || ""}>
+                    <td>{run.total_tokens}</td>
+                    <td>${run.estimated_cost_usd.toFixed(4)}</td>
+                    <td>{run.retry_count}</td>
+                    <td>{run.duration_ms != null ? `${run.duration_ms} ms` : "—"}</td>
+                    <td className="max-w-[220px] truncate text-rose-700" title={run.error_message || ""}>
                       {run.error_message || "—"}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{formatDate(run.created_at)}</td>
+                    <td className="text-slate-600">{formatDate(run.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
+            <p className="border-t-[3px] border-black bg-lego-yellow/30 px-4 py-2 text-xs font-semibold text-slate-600">
               Avg duration (page): {summary.avgDuration || 0} ms
             </p>
           </div>

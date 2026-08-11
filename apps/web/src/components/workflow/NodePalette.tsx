@@ -26,7 +26,7 @@ export function NodePalette({ onAdd }: { onAdd: (type: NodeType) => void }) {
             e.dataTransfer.effectAllowed = "move";
           }}
           onClick={() => onAdd(item.type)}
-          className={`w-full rounded-brick border-[3px] border-black px-3 py-2 text-left shadow-brick transition hover:-translate-y-0.5 ${brickColors[item.type]}`}
+          className={`w-full rounded-brick border-[3px] border-black px-3 py-2 text-left shadow-brick transition hover:-translate-y-0.5 active:animate-brick-drop ${brickColors[item.type]}`}
         >
           <div className="text-sm font-extrabold">{item.label}</div>
           <div className="text-xs font-semibold opacity-80">{item.description}</div>

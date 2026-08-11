@@ -94,29 +94,29 @@ export default function WorkflowsPage() {
       {!loading && !error && workflows.length > 0 ? (
         <div>
           <div className="panel overflow-hidden">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
+            <table className="table-brick">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Nodes</th>
-                  <th className="px-4 py-3 font-medium">Updated</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Nodes</th>
+                  <th>Updated</th>
                 </tr>
               </thead>
               <tbody>
                 {workflows.map((wf) => (
-                  <tr key={wf.id} className="border-t border-slate-100 hover:bg-teal-50/40">
-                    <td className="px-4 py-3">
+                  <tr key={wf.id}>
+                    <td>
                       <Link href={`/workflows/${wf.id}`} className="font-medium text-slate-900 hover:text-teal-700">
                         {wf.name}
                       </Link>
                       <p className="text-xs text-slate-500">{wf.description || "—"}</p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <StatusBadge status={wf.status} />
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{wf.definition?.nodes?.length ?? 0}</td>
-                    <td className="px-4 py-3 text-slate-600">{formatDate(wf.updated_at)}</td>
+                    <td className="text-slate-600">{wf.definition?.nodes?.length ?? 0}</td>
+                    <td className="text-slate-600">{formatDate(wf.updated_at)}</td>
                   </tr>
                 ))}
               </tbody>

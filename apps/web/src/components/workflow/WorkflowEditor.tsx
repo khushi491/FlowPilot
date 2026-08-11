@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Background,
   Controls,
@@ -15,7 +16,7 @@ import {
   ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Save } from "lucide-react";
+import { Radio, Save } from "lucide-react";
 import { BaseNode } from "./nodes/BaseNode";
 import { NodePalette } from "./NodePalette";
 import { ConfigPanel } from "./ConfigPanel";
@@ -81,9 +82,19 @@ function toFlowEdges(definition: Workflow["definition"]): Edge[] {
 export function WorkflowEditor({
   workflow,
   onSaved,
+  runStatuses,
+  activeRunId,
+  runLiveStatus,
+  runConnected,
+  onSelectRunNode,
 }: {
   workflow: Workflow;
   onSaved: (wf: Workflow) => void;
+  runStatuses?: Record<string, string>;
+  activeRunId?: string | null;
+  runLiveStatus?: string | null;
+  runConnected?: boolean;
+  onSelectRunNode?: (nodeId: string) => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(toFlowNodes(workflow.definition));
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(toFlowEdges(workflow.definition));
@@ -93,6 +104,19 @@ export function WorkflowEditor({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!runStatuses) return;
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: {
+          ...(n.data as WorkflowNodeData),
+          runStatus: runStatuses[n.id],
+        },
+      }))
+    );
+  }, [runStatuses, setNodes]);
 
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedId) || null,
@@ -118,10 +142,20 @@ export function WorkflowEditor({
           label: meta.label,
           type,
           config: { ...meta.defaults },
+          justDropped: true,
         },
       };
       setNodes((nds: Node[]) => [...nds, node]);
       setSelectedId(id);
+      window.setTimeout(() => {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === id
+              ? { ...n, data: { ...(n.data as WorkflowNodeData), justDropped: false } }
+              : n
+          )
+        );
+      }, 450);
     },
     [nodes.length, setNodes]
   );
@@ -164,7 +198,11 @@ export function WorkflowEditor({
           id: n.id,
           type: data.type,
           position: n.position,
-          data,
+          data: {
+            label: data.label,
+            type: data.type,
+            config: data.config,
+          },
         };
       }),
       edges: edges.map((e) => ({
@@ -211,6 +249,23 @@ export function WorkflowEditor({
           {saving ? "Snapping..." : "Save bricks"}
         </button>
       </div>
+      {activeRunId ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-black bg-lego-ink px-4 py-2 text-sm font-semibold text-white">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="brick-chip bg-lego-yellow text-lego-ink">Live run</span>
+            <span className="inline-flex items-center gap-1 text-xs text-white/80">
+              <Radio className={`h-3.5 w-3.5 ${runConnected ? "text-lego-green" : "text-white/40"}`} />
+              {runConnected ? "Streaming" : "Connecting…"}
+            </span>
+            <span className="text-xs uppercase tracking-wide text-white/70">
+              {runLiveStatus || "running"}
+            </span>
+          </div>
+          <Link href={`/runs/${activeRunId}`} className="text-xs font-bold uppercase text-lego-yellow hover:underline">
+            Open full trace →
+          </Link>
+        </div>
+      ) : null}
       {(errors.length > 0 || message) && (
         <div className="border-b-[3px] border-black px-4 py-2 text-sm font-semibold">
           {message ? <p className="text-lego-green">Brick set saved.</p> : null}
@@ -238,9 +293,11 @@ export function WorkflowEditor({
             onConnect={onConnect}
             onInit={setRf}
             nodeTypes={nodeTypes}
-            onSelectionChange={({ nodes: selected }: { nodes: Node[] }) =>
-              setSelectedId(selected[0]?.id || null)
-            }
+            onSelectionChange={({ nodes: selected }: { nodes: Node[] }) => {
+              const id = selected[0]?.id || null;
+              setSelectedId(id);
+              if (id && onSelectRunNode && runStatuses?.[id]) onSelectRunNode(id);
+            }}
             fitView
           >
             <Background gap={28} size={2} color="#cfcfcf" />

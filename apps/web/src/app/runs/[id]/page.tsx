@@ -113,26 +113,41 @@ export default function RunDetailPage() {
               <Metric label="Duration" value={run.duration_ms != null ? `${run.duration_ms} ms` : "—"} />
             </div>
             {effectiveStatus === "paused" ? (
-              <div className="space-y-3 rounded-lg border-2 border-amber-300 bg-amber-50 px-4 py-3">
-                <div>
-                  <h2 className="font-semibold text-amber-950">Approval required</h2>
-                  <p className="text-sm text-amber-900/80">
-                    {waitingNode
-                      ? `Waiting on node ${waitingNode.node_id}. Approve to continue or reject to fail the run.`
-                      : "This run is paused for human approval."}
-                  </p>
+              <div className="space-y-4 rounded-brick border-[4px] border-black bg-lego-yellow px-5 py-4 shadow-brick-yellow animate-brick-pop">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-brick border-[3px] border-black bg-lego-red px-3 py-2 text-xs font-extrabold uppercase text-white shadow-brick-red">
+                    Stop brick
+                  </div>
+                  <div>
+                    <h2 className="font-display text-2xl font-bold text-lego-ink">Human approval</h2>
+                    <p className="text-sm font-semibold text-black/75">
+                      {waitingNode
+                        ? `Build paused at ${waitingNode.node_id}. Snap Approve to continue or Reject to fail.`
+                        : "This run is paused for human approval."}
+                    </p>
+                  </div>
                 </div>
-                <label className="block text-sm text-amber-950">
+                {waitingNode?.output_data ? (
+                  <pre className="max-h-36 overflow-auto rounded-brick border-[3px] border-black bg-white p-3 text-xs font-mono text-lego-ink">
+                    {JSON.stringify(
+                      (waitingNode.output_data as { preview?: unknown }).preview ??
+                        waitingNode.output_data,
+                      null,
+                      2
+                    )}
+                  </pre>
+                ) : null}
+                <label className="block text-sm font-bold text-lego-ink">
                   Note (optional)
                   <textarea
                     value={decisionNote}
                     onChange={(e) => setDecisionNote(e.target.value)}
                     rows={2}
-                    className="mt-1 w-full rounded-md border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900"
+                    className="input-lego mt-1"
                     placeholder="Reason for approval or rejection"
                   />
                 </label>
-                {decisionError ? <p className="text-sm text-rose-700">{decisionError}</p> : null}
+                {decisionError ? <p className="text-sm font-semibold text-lego-red">{decisionError}</p> : null}
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -145,7 +160,7 @@ export default function RunDetailPage() {
                   </button>
                   <button
                     type="button"
-                    className="btn-secondary inline-flex items-center gap-1 border-rose-300 text-rose-800"
+                    className="inline-flex items-center gap-1 rounded-md border-[3px] border-black bg-white px-4 py-2.5 text-sm font-bold uppercase text-lego-red shadow-brick"
                     disabled={deciding}
                     onClick={() => void submitDecision(false)}
                   >

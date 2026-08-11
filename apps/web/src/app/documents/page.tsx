@@ -93,24 +93,24 @@ export default function DocumentsPage() {
       {!loading && !error && docs.length > 0 ? (
         <div>
           <div className="panel overflow-hidden">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
+            <table className="table-brick">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 font-medium">File</th>
-                  <th className="px-4 py-3 font-medium">Size</th>
-                  <th className="px-4 py-3 font-medium">Chunks</th>
-                  <th className="px-4 py-3 font-medium">Uploaded</th>
-                  <th className="px-4 py-3 font-medium" />
+                  <th>File</th>
+                  <th>Size</th>
+                  <th>Chunks</th>
+                  <th>Uploaded</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
                 {docs.map((doc) => (
-                  <tr key={doc.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3 font-medium text-slate-900">{doc.filename}</td>
-                    <td className="px-4 py-3 text-slate-600">{formatBytes(doc.size_bytes)}</td>
-                    <td className="px-4 py-3 text-slate-600">{doc.chunk_count}</td>
-                    <td className="px-4 py-3 text-slate-600">{formatDate(doc.created_at)}</td>
-                    <td className="px-4 py-3 text-right">
+                  <tr key={doc.id}>
+                    <td className="font-medium text-slate-900">{doc.filename}</td>
+                    <td className="text-slate-600">{formatBytes(doc.size_bytes)}</td>
+                    <td className="text-slate-600">{doc.chunk_count}</td>
+                    <td className="text-slate-600">{formatDate(doc.created_at)}</td>
+                    <td className="text-right">
                       <button
                         type="button"
                         className="rounded-md p-2 text-rose-600 hover:bg-rose-50"

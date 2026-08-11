@@ -36,7 +36,7 @@ export function Sidebar() {
       <div className="border-b-[3px] border-black px-5 py-6">
         <Link href="/dashboard" className="block" onClick={() => setOpen(false)}>
           <div className="flex items-center gap-2">
-            <LegoStud color="yellow" className="h-5 w-5" />
+            <LegoStud color="yellow" className="h-5 w-5" bounce />
             <div className="font-display text-2xl font-bold tracking-tight text-white">FlowPilot</div>
           </div>
           <p className="mt-1 text-xs font-bold uppercase tracking-wide text-lego-yellow">Brick studio</p>

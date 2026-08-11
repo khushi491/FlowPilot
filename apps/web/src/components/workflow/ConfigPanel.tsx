@@ -82,8 +82,20 @@ export function ConfigPanel({
             onChange={(v) => setConfig("expression", v)}
             textarea
           />
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {["score > 50", "input.value == true", "not flagged", "score >= 10 and score < 100"].map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                className="brick-chip bg-white hover:bg-lego-yellow"
+                onClick={() => setConfig("expression", chip)}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
           <p className="mb-3 text-xs text-black/60">
-            Safe DSL only (comparisons / and / or / not). Example: score &gt; 50
+            Safe DSL only (comparisons / and / or / not). Click a chip to insert.
           </p>
         </>
       ) : null}
