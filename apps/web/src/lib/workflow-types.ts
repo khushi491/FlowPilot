@@ -1,16 +1,11 @@
-export type NodeType =
-  | "llm"
-  | "api"
-  | "database"
-  | "condition"
-  | "rag"
-  | "approval"
-  | "output";
+export type {
+  NodeType,
+  WorkflowDefinition,
+  WorkflowNodeData as SharedWorkflowNodeData,
+} from "@flowpilot/shared";
+import type { NodeType, WorkflowNodeData as SharedWorkflowNodeData } from "@flowpilot/shared";
 
-export interface WorkflowNodeData {
-  label: string;
-  type: NodeType;
-  config: Record<string, unknown>;
+export interface WorkflowNodeData extends SharedWorkflowNodeData {
   [key: string]: unknown;
 }
 

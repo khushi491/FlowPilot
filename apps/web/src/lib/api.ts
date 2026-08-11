@@ -1,7 +1,8 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import type { RunStatus, WorkflowDefinition, WorkflowStatus } from "@flowpilot/shared";
 
-export type WorkflowStatus = "draft" | "active" | "paused" | "failed";
-export type RunStatus = "queued" | "running" | "completed" | "failed" | "paused";
+export type { RunStatus, WorkflowStatus } from "@flowpilot/shared";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface Workflow {
   id: string;
@@ -9,7 +10,7 @@ export interface Workflow {
   name: string;
   description: string;
   status: WorkflowStatus;
-  definition: {
+  definition: WorkflowDefinition | {
     nodes: Array<Record<string, unknown>>;
     edges: Array<Record<string, unknown>>;
   };
