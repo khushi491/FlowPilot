@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820">
+  <defs>
+    <pattern id="studsBlue" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="18" cy="18" r="9" fill="rgba(255,255,255,0.2)"/>
+    </pattern>
+  </defs>
+  <rect width="1400" height="820" fill="#0055bf"/>
+  <rect width="1400" height="820" fill="url(#studsBlue)"/>
+
+  <rect x="450" y="140" width="500" height="540" rx="12" fill="#ffd500" stroke="#111" stroke-width="5"/>
+  <circle cx="500" cy="200" r="14" fill="#e3000b" stroke="#111" stroke-width="3"/>
+  <text x="530" y="210" fill="#111" font-family="Arial Black, sans-serif" font-size="28">FlowPilot</text>
+
+  <circle cx="500" cy="250" r="10" fill="#e3000b" stroke="#111" stroke-width="2"/>
+  <circle cx="530" cy="250" r="10" fill="#0055bf" stroke="#111" stroke-width="2"/>
+  <circle cx="560" cy="250" r="10" fill="#00a651" stroke="#111" stroke-width="2"/>
+  <circle cx="590" cy="250" r="10" fill="#f57c00" stroke="#111" stroke-width="2"/>
+
+  <text x="500" y="310" fill="#111" font-family="Arial Black, sans-serif" font-size="40">Click in</text>
+  <text x="500" y="345" fill="#333" font-family="Arial, sans-serif" font-size="18" font-weight="700">Sign in to your brick-built workspace.</text>
+
+  <text x="500" y="400" fill="#111" font-family="Arial Black, sans-serif" font-size="14">EMAIL</text>
+  <rect x="500" y="415" width="400" height="48" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="520" y="446" fill="#555" font-family="Arial, sans-serif" font-size="16" font-weight="700">demo@flowpilot.dev</text>
+
+  <text x="500" y="505" fill="#111" font-family="Arial Black, sans-serif" font-size="14">PASSWORD</text>
+  <rect x="500" y="520" width="400" height="48" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="520" y="551" fill="#555" font-family="Arial, sans-serif" font-size="16" font-weight="700">"""""""""</text>
+
+  <rect x="500" y="595" width="400" height="52" rx="8" fill="#e3000b" stroke="#111" stroke-width="4"/>
+  <text x="655" y="629" fill="#fff" font-family="Arial Black, sans-serif" font-size="20">SIGN IN</text>
+</svg>

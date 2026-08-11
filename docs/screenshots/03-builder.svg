@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820">
+  <defs>
+    <pattern id="baseplate" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="15" cy="15" r="7" fill="#d0d0d0"/>
+    </pattern>
+  </defs>
+
+  <rect width="1400" height="820" fill="#f2f2f2"/>
+
+  <!-- top bar -->
+  <rect width="1400" height="80" fill="#ffd500" stroke="#111" stroke-width="4"/>
+  <rect x="24" y="18" width="420" height="44" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="40" y="47" fill="#111" font-family="Arial Black, sans-serif" font-size="18">Resume Reviewer Agent</text>
+  <rect x="1120" y="18" width="240" height="44" rx="8" fill="#e3000b" stroke="#111" stroke-width="3"/>
+  <text x="1165" y="47" fill="#fff" font-family="Arial Black, sans-serif" font-size="18">SAVE BRICKS</text>
+
+  <!-- brick bin -->
+  <rect y="80" width="250" height="740" fill="#fff" stroke="#111" stroke-width="4"/>
+  <text x="30" y="120" fill="#111" font-family="Arial Black, sans-serif" font-size="18">BRICK BIN</text>
+
+  <rect x="20" y="145" width="210" height="70" rx="8" fill="#ffd500" stroke="#111" stroke-width="3"/>
+  <text x="40" y="175" fill="#111" font-family="Arial Black, sans-serif" font-size="16">LLM Prompt</text>
+  <text x="40" y="198" fill="#333" font-family="Arial, sans-serif" font-size="12" font-weight="700">Call an LLM</text>
+
+  <rect x="20" y="230" width="210" height="70" rx="8" fill="#0055bf" stroke="#111" stroke-width="3"/>
+  <text x="40" y="260" fill="#fff" font-family="Arial Black, sans-serif" font-size="16">API Request</text>
+  <text x="40" y="283" fill="#ddeeff" font-family="Arial, sans-serif" font-size="12" font-weight="700">HTTP call</text>
+
+  <rect x="20" y="315" width="210" height="70" rx="8" fill="#00a651" stroke="#111" stroke-width="3"/>
+  <text x="40" y="345" fill="#fff" font-family="Arial Black, sans-serif" font-size="16">RAG Search</text>
+  <text x="40" y="368" fill="#eafff1" font-family="Arial, sans-serif" font-size="12" font-weight="700">Retrieve chunks</text>
+
+  <rect x="20" y="400" width="210" height="70" rx="8" fill="#e3000b" stroke="#111" stroke-width="3"/>
+  <text x="40" y="430" fill="#fff" font-family="Arial Black, sans-serif" font-size="16">Approval</text>
+  <text x="40" y="453" fill="#ffe0e0" font-family="Arial, sans-serif" font-size="12" font-weight="700">Human pause</text>
+
+  <rect x="20" y="485" width="210" height="70" rx="8" fill="#111" stroke="#111" stroke-width="3"/>
+  <text x="40" y="515" fill="#fff" font-family="Arial Black, sans-serif" font-size="16">Output</text>
+  <text x="40" y="538" fill="#ddd" font-family="Arial, sans-serif" font-size="12" font-weight="700">Final response</text>
+
+  <!-- canvas -->
+  <rect x="250" y="80" width="850" height="740" fill="#e8e8e8"/>
+  <rect x="250" y="80" width="850" height="740" fill="url(#baseplate)"/>
+
+  <rect x="380" y="220" width="220" height="110" rx="10" fill="#ffd500" stroke="#111" stroke-width="4"/>
+  <circle cx="415" cy="250" r="10" fill="#fff" stroke="#111" stroke-width="2"/>
+  <circle cx="445" cy="250" r="10" fill="#fff" stroke="#111" stroke-width="2"/>
+  <circle cx="475" cy="250" r="10" fill="#fff" stroke="#111" stroke-width="2"/>
+  <text x="405" y="285" fill="#111" font-family="Arial Black, sans-serif" font-size="14">LLM</text>
+  <text x="405" y="310" fill="#111" font-family="Arial Black, sans-serif" font-size="20">Review Resume</text>
+
+  <path d="M600 275 H720" stroke="#111" stroke-width="6"/>
+  <polygon points="720,265 740,275 720,285" fill="#111"/>
+
+  <rect x="740" y="220" width="220" height="110" rx="10" fill="#111" stroke="#111" stroke-width="4"/>
+  <circle cx="775" cy="250" r="10" fill="#fff" stroke="#ffd500" stroke-width="2"/>
+  <circle cx="805" cy="250" r="10" fill="#fff" stroke="#ffd500" stroke-width="2"/>
+  <circle cx="835" cy="250" r="10" fill="#fff" stroke="#ffd500" stroke-width="2"/>
+  <text x="765" y="285" fill="#ffd500" font-family="Arial Black, sans-serif" font-size="14">OUTPUT</text>
+  <text x="765" y="310" fill="#fff" font-family="Arial Black, sans-serif" font-size="20">Final Review</text>
+
+  <!-- config -->
+  <rect x="1100" y="80" width="300" height="740" fill="#fff7cc" stroke="#111" stroke-width="4"/>
+  <text x="1125" y="125" fill="#111" font-family="Arial Black, sans-serif" font-size="22">BRICK CONFIG</text>
+  <text x="1125" y="170" fill="#333" font-family="Arial Black, sans-serif" font-size="14">LABEL</text>
+  <rect x="1125" y="185" width="250" height="44" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="1140" y="213" fill="#111" font-family="Arial, sans-serif" font-size="16" font-weight="700">Review Resume</text>
+  <text x="1125" y="270" fill="#333" font-family="Arial Black, sans-serif" font-size="14">PROMPT</text>
+  <rect x="1125" y="285" width="250" height="160" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="1140" y="320" fill="#333" font-family="Arial, sans-serif" font-size="14" font-weight="700">Review this resume...</text>
+  <text x="1125" y="490" fill="#333" font-family="Arial Black, sans-serif" font-size="14">MODEL</text>
+  <rect x="1125" y="505" width="250" height="44" rx="8" fill="#fffef5" stroke="#111" stroke-width="3"/>
+  <text x="1140" y="533" fill="#111" font-family="Arial, sans-serif" font-size="16" font-weight="700">gpt-4o-mini</text>
+</svg>

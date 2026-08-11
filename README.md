@@ -4,7 +4,7 @@
 
 FlowPilot is a full-stack visual workflow builder for designing, running, and observing LLM-powered automations. Drag nodes onto a canvas, connect them, execute the graph, and watch live traces stream in over WebSockets.
 
-![FlowPilot](docs/screenshots/hero.svg)
+![FlowPilot hero](docs/screenshots/01-hero.svg)
 
 **Live stack:** Next.js · FastAPI · PostgreSQL + pgvector · Redis · Docker · GitHub Actions
 
@@ -14,15 +14,22 @@ Demo login after setup: `demo@flowpilot.dev` / `demo12345`
 
 ## Screenshots
 
-| Landing / brand | Dashboard | Builder | Run traces |
-|-----------------|-----------|---------|------------|
-| Lego-themed hero | Workflow list + status | React Flow brick canvas | Live timeline + node traces |
+Lego brick UI — studded baseplates, thick borders, and color-coded workflow bricks.
 
-![Dashboard](docs/screenshots/dashboard.svg)
-![Builder](docs/screenshots/builder.svg)
-![Runs](docs/screenshots/runs.svg)
+### Landing
+![Landing page](docs/screenshots/01-hero.svg)
 
-> Replace the SVG placeholders in `docs/screenshots/` with real app captures for a stronger portfolio README.
+### Login
+![Login](docs/screenshots/05-login.svg)
+
+### Dashboard
+![Dashboard](docs/screenshots/02-dashboard.svg)
+
+### Visual workflow builder
+![Workflow builder](docs/screenshots/03-builder.svg)
+
+### Live run observability
+![Run traces](docs/screenshots/04-runs.svg)
 
 ---
 
