@@ -98,11 +98,13 @@ FlowPilot/
 - Right-side config panel + save-time validation
 
 ### Execution engine
-- Loads workflow JSON and validates the graph
-- Topological / dependency-aware execution
+- Loads workflow JSON and validates the graph (also on save / run)
+- Topological / dependency-aware execution with fan-in joins
 - Retries + per-node timeouts
 - Stops on failed required nodes
-- Human-approval nodes pause the run
+- Human-approval nodes pause the run; resume via `POST /runs/{id}/decision`
+- Local runs use FastAPI background tasks (`USE_CELERY=false`)
+- Docker Compose sets `USE_CELERY=true` so the Celery worker executes runs; Redis pub/sub fans out live events to WebSockets
 
 ### Observability
 - Run history with status filters
@@ -206,8 +208,10 @@ Copy [`.env.example`](.env.example) → `.env`.
 |----------|---------|
 | `DATABASE_URL` | Async SQLAlchemy URL (`postgresql+asyncpg://...`) |
 | `DATABASE_URL_SYNC` | Alembic sync URL |
-| `REDIS_URL` | Redis / Celery broker |
+| `REDIS_URL` | Redis / Celery broker + run event pub/sub |
+| `USE_CELERY` | `true` = enqueue runs to Celery worker; `false` = in-process (default locally) |
 | `JWT_SECRET` | JWT signing secret |
+| `APP_ENV` | `development` allows placeholder JWT; non-dev requires a strong secret |
 | `CORS_ORIGINS` | Allowed frontend origins |
 | `NEXT_PUBLIC_API_URL` | Browser API base (`http://localhost:8000`) |
 | `NEXT_PUBLIC_WS_URL` | Browser WebSocket base (`ws://localhost:8000`) |
@@ -228,7 +232,7 @@ Interactive docs: http://localhost:8000/docs
 |------|-----------|
 | Auth | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
 | Workflows | `POST/GET/PUT/DELETE /workflows` |
-| Runs | `POST /workflows/{id}/runs`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/nodes` |
+| Runs | `POST /workflows/{id}/runs`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/nodes`, `POST /runs/{id}/decision` |
 | Documents | `POST /documents/upload`, `GET /documents`, `DELETE /documents/{id}` |
 | Templates | `GET /templates`, `POST /templates/{id}/use` |
 | Realtime | `WS /ws/runs/{id}` |

@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     default_node_timeout_seconds: int = 60
     default_max_retries: int = 2
     embedding_dimensions: int = 1536
+    use_celery: bool = False
 
     @property
     def cors_origin_list(self) -> List[str]:

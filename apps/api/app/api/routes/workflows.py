@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, parse_uuid
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.db.session import get_db
 from app.engine.executor import enqueue_run
@@ -17,6 +18,7 @@ from app.schemas.workflow import RunCreate, WorkflowCreate, WorkflowOut, Workflo
 router = APIRouter()
 
 ALLOWED_STATUSES = {"draft", "active", "paused", "failed"}
+settings = get_settings()
 
 
 def _ensure_valid_definition(definition: dict, *, require_nodes: bool = False) -> None:
@@ -171,8 +173,12 @@ async def create_run(
     await db.commit()
     await db.refresh(run)
 
-    # Execute asynchronously in-process. Celery worker task is available for scaled deploys.
-    background_tasks.add_task(enqueue_run, run.id)
+    if settings.use_celery:
+        from app.workers.tasks import execute_run_task
+
+        execute_run_task.delay(str(run.id))
+    else:
+        background_tasks.add_task(enqueue_run, run.id)
     return run
 
 

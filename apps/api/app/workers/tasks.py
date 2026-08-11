@@ -10,3 +10,11 @@ def execute_run_task(run_id: str) -> str:
 
     asyncio.run(execute_workflow_run(UUID(run_id)))
     return run_id
+
+
+@celery_app.task(name="app.workers.tasks.resume_run_task")
+def resume_run_task(run_id: str, approved: bool, note: str = "") -> str:
+    from app.engine.executor import resume_workflow_run
+
+    asyncio.run(resume_workflow_run(UUID(run_id), approved=approved, note=note))
+    return run_id

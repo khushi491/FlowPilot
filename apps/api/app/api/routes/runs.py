@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_user, parse_uuid
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.db.session import get_db
 from app.engine.executor import enqueue_decision
@@ -15,6 +16,7 @@ from app.models.workflow import NodeRun, WorkflowRun
 from app.schemas.workflow import NodeRunOut, RunDecision, WorkflowRunOut
 
 router = APIRouter()
+settings = get_settings()
 
 
 @router.get("/runs", response_model=list[WorkflowRunOut])
@@ -72,7 +74,12 @@ async def decide_run(
     if not pause:
         raise AppError("Run is missing an approval checkpoint", status_code=409, code="missing_checkpoint")
 
-    background_tasks.add_task(enqueue_decision, run.id, payload.approved, payload.note)
+    if settings.use_celery:
+        from app.workers.tasks import resume_run_task
+
+        resume_run_task.delay(str(run.id), payload.approved, payload.note)
+    else:
+        background_tasks.add_task(enqueue_decision, run.id, payload.approved, payload.note)
     run.logs = list(run.logs or []) + [
         {
             "level": "info",

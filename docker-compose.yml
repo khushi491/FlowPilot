@@ -39,6 +39,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       CORS_ORIGINS: http://localhost:3000
       UPLOAD_DIR: /app/uploads
+      USE_CELERY: "true"
     ports:
       - "8000:8000"
     volumes:
@@ -53,7 +54,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    command: celery -A app.workers.celery_app.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app.celery_app worker --loglevel=info -Q flowpilot
     env_file:
       - .env
     environment:
@@ -61,6 +62,7 @@ services:
       DATABASE_URL_SYNC: postgresql://flowpilot:flowpilot@postgres:5432/flowpilot
       REDIS_URL: redis://redis:6379/0
       UPLOAD_DIR: /app/uploads
+      USE_CELERY: "true"
     volumes:
       - uploads_data:/app/uploads
     depends_on:
