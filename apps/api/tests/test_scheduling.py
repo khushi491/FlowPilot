@@ -114,3 +114,41 @@ def test_condition_false_branch_taken():
     }
     order = _run_schedule(definition, outcomes)
     assert order == ["cond", "false_path"]
+
+
+def test_linear_chain_order():
+    definition = {
+        "nodes": [{"id": "a"}, {"id": "b"}, {"id": "c"}],
+        "edges": [
+            {"source": "a", "target": "b"},
+            {"source": "b", "target": "c"},
+        ],
+    }
+    outcomes = {"a": {"type": "llm"}, "b": {"type": "llm"}, "c": {"type": "output"}}
+    assert _run_schedule(definition, outcomes) == ["a", "b", "c"]
+
+
+def test_skipped_branch_cascades_to_descendants():
+    definition = {
+        "nodes": [
+            {"id": "cond"},
+            {"id": "true_path"},
+            {"id": "false_path"},
+            {"id": "false_child"},
+        ],
+        "edges": [
+            {"source": "cond", "target": "true_path", "sourceHandle": "true"},
+            {"source": "cond", "target": "false_path", "sourceHandle": "false"},
+            {"source": "false_path", "target": "false_child"},
+        ],
+    }
+    outcomes = {
+        "cond": {"type": "condition", "branch": "true"},
+        "true_path": {"type": "llm"},
+        "false_path": {"type": "llm"},
+        "false_child": {"type": "output"},
+    }
+    order = _run_schedule(definition, outcomes)
+    assert order == ["cond", "true_path"]
+    assert "false_path" not in order
+    assert "false_child" not in order

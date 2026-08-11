@@ -24,3 +24,9 @@ def test_signup_validation_error():
 def test_create_workflow_validation_without_auth():
     response = client.post("/workflows", json={"name": ""})
     assert response.status_code in {401, 422}
+
+
+def test_paginated_list_endpoints_require_auth():
+    for path in ("/workflows", "/runs", "/documents"):
+        response = client.get(path)
+        assert response.status_code == 401

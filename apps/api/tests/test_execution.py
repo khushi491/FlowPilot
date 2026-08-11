@@ -40,5 +40,15 @@ async def test_condition_routing():
     assert false_result["branch"] == "false"
 
 
+@pytest.mark.asyncio
+async def test_approval_node_pauses():
+    from app.engine.nodes import execute_approval
+
+    result = await execute_approval({"message": "Review output"}, {"content": "draft"})
+    assert result["paused"] is True
+    assert result["status"] == "waiting_approval"
+    assert "draft" in str(result["preview"])
+
+
 def test_async_helpers_importable():
     assert asyncio.iscoroutinefunction(execute_llm)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getStoredToken } from "@/lib/token";
 
 export interface RunSocketEvent {
   type: string;
@@ -18,11 +19,6 @@ export interface RunSocketEvent {
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
 
-function readToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("flowpilot_token");
-}
-
 export function useRunSocket(runId?: string | null) {
   const [events, setEvents] = useState<RunSocketEvent[]>([]);
   const [connected, setConnected] = useState(false);
@@ -31,7 +27,7 @@ export function useRunSocket(runId?: string | null) {
 
   useEffect(() => {
     if (!runId) return;
-    const token = readToken();
+    const token = getStoredToken();
     if (!token) {
       setConnected(false);
       return;
