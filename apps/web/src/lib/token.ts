@@ -1,18 +1,14 @@
+"use client";
+
+/**
+ * Legacy localStorage helpers — session now lives in an HttpOnly cookie via `/api`.
+ * Kept only to clear older client-side tokens on upgrade.
+ */
 const TOKEN_KEY = "flowpilot_token";
 
-export function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function persistToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-  // Mirror into a cookie so Next.js middleware can gate protected routes.
-  const maxAge = 60 * 60 * 24 * 7;
-  document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
-}
-
-export function clearToken() {
+export function clearLegacyClientTokens() {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
+  // Clear any previous non-HttpOnly mirror cookie written by older builds.
   document.cookie = `${TOKEN_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
 }

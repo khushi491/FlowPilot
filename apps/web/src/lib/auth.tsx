@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { clearToken, getStoredToken, persistToken } from "@/lib/token";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { apiBaseUrl } from "@/lib/client-config";
+import { clearLegacyClientTokens } from "@/lib/token";
 
 export interface AuthUser {
   id: string;
@@ -17,15 +16,13 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, fullName: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-async function fetchMe(token: string): Promise<AuthUser> {
-  const res = await fetch(`${API_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function fetchMe(): Promise<AuthUser> {
+  const res = await fetch(`${apiBaseUrl()}/auth/me`, { credentials: "include" });
   if (!res.ok) throw new Error("Unauthorized");
   return res.json();
 }
@@ -35,47 +32,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getStoredToken();
-    if (!token) {
-      clearToken();
-      setLoading(false);
-      return;
-    }
-    // Keep cookie in sync for users who already had localStorage-only sessions.
-    persistToken(token);
-    fetchMe(token)
+    clearLegacyClientTokens();
+    fetchMe()
       .then(setUser)
-      .catch(() => clearToken())
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const res = await fetch(`${apiBaseUrl()}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Login failed");
-    persistToken(data.access_token);
-    setUser(await fetchMe(data.access_token));
+    setUser(await fetchMe());
   };
 
   const signup = async (email: string, password: string, fullName: string) => {
-    const res = await fetch(`${API_URL}/auth/signup`, {
+    const res = await fetch(`${apiBaseUrl()}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, password, full_name: fullName }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Signup failed");
-    persistToken(data.access_token);
-    setUser(await fetchMe(data.access_token));
+    setUser(await fetchMe());
   };
 
-  const logout = () => {
-    clearToken();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await fetch(`${apiBaseUrl()}/auth/logout`, { method: "POST", credentials: "include" });
+    } finally {
+      clearLegacyClientTokens();
+      setUser(null);
+    }
   };
 
   return (

@@ -84,7 +84,7 @@ FlowPilot/
 | Frontend | Next.js 14, TypeScript, Tailwind CSS, React Flow (`@xyflow/react`), lucide-react |
 | Backend | FastAPI, SQLAlchemy (async), Alembic, Pydantic, Celery |
 | Data | PostgreSQL 16 + pgvector, Redis |
-| Auth | JWT (signup / login / protected routes) |
+| Auth | JWT via Next.js `/api` BFF + HttpOnly cookie (signup / login / protected routes) |
 | Realtime | WebSockets (`/ws/runs/{id}`) |
 | DevOps | Docker Compose, GitHub Actions |
 
@@ -125,8 +125,10 @@ FlowPilot/
 3. **Research Summarizer Agent** — API → LLM → Output  
 
 ### Auth & multi-user
-- Signup / login / logout
-- Protected dashboard routes
+- Signup / login / logout through the Next.js same-origin `/api` proxy
+- Session stored in an HttpOnly cookie (not localStorage)
+- Protected dashboard routes gated by middleware + client checks
+- WebSocket uses a short-lived token minted from the HttpOnly session (`/api/auth/ws-token`)
 - Workflows, runs, and documents scoped to the authenticated user
 
 ---
@@ -213,8 +215,9 @@ Copy [`.env.example`](.env.example) → `.env`.
 | `JWT_SECRET` | JWT signing secret |
 | `APP_ENV` | `development` allows placeholder JWT; non-dev requires a strong secret |
 | `CORS_ORIGINS` | Allowed frontend origins |
-| `NEXT_PUBLIC_API_URL` | Browser API base (`http://localhost:8000`) |
+| `NEXT_PUBLIC_API_URL` | Browser API base (use `/api` for same-origin BFF) |
 | `NEXT_PUBLIC_WS_URL` | Browser WebSocket base (`ws://localhost:8000`) |
+| `API_INTERNAL_URL` | Server-only FastAPI upstream for the Next.js proxy |
 | `USE_MOCK_LLM` | `true` = mock LLM (default) |
 | `USE_MOCK_EMBEDDINGS` | `true` = deterministic local embeddings (default) |
 | `OPENAI_API_KEY` | Optional real LLM / embedding calls |

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getStoredToken } from "@/lib/token";
+import { api } from "@/lib/api";
+import { wsBaseUrl } from "@/lib/client-config";
 
 export interface RunSocketEvent {
   type: string;
@@ -17,8 +18,6 @@ export interface RunSocketEvent {
   [key: string]: unknown;
 }
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
-
 export function useRunSocket(runId?: string | null) {
   const [events, setEvents] = useState<RunSocketEvent[]>([]);
   const [connected, setConnected] = useState(false);
@@ -27,31 +26,39 @@ export function useRunSocket(runId?: string | null) {
 
   useEffect(() => {
     if (!runId) return;
-    const token = getStoredToken();
-    if (!token) {
-      setConnected(false);
-      return;
-    }
-    const url = `${WS_URL}/ws/runs/${runId}?token=${encodeURIComponent(token)}`;
-    const socket = new WebSocket(url);
-    socketRef.current = socket;
+    let cancelled = false;
+    let socket: WebSocket | null = null;
 
-    socket.onopen = () => setConnected(true);
-    socket.onclose = () => setConnected(false);
-    socket.onerror = () => setConnected(false);
-    socket.onmessage = (message) => {
+    const connect = async () => {
       try {
-        const event = JSON.parse(message.data) as RunSocketEvent;
-        if (event.type === "ping") return;
-        setEvents((prev) => [...prev, event]);
-        if (event.status) setStatus(event.status);
+        const { access_token } = await api.fetchWsToken();
+        if (cancelled) return;
+        const url = `${wsBaseUrl()}/ws/runs/${runId}?token=${encodeURIComponent(access_token)}`;
+        socket = new WebSocket(url);
+        socketRef.current = socket;
+        socket.onopen = () => setConnected(true);
+        socket.onclose = () => setConnected(false);
+        socket.onerror = () => setConnected(false);
+        socket.onmessage = (message) => {
+          try {
+            const event = JSON.parse(message.data) as RunSocketEvent;
+            if (event.type === "ping") return;
+            setEvents((prev) => [...prev, event]);
+            if (event.status) setStatus(event.status);
+          } catch {
+            /* ignore malformed */
+          }
+        };
       } catch {
-        /* ignore malformed */
+        if (!cancelled) setConnected(false);
       }
     };
 
+    void connect();
+
     return () => {
-      socket.close();
+      cancelled = true;
+      socket?.close();
       socketRef.current = null;
     };
   }, [runId]);

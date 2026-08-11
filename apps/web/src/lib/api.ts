@@ -1,9 +1,7 @@
 import type { RunStatus, WorkflowDefinition, WorkflowStatus } from "@flowpilot/shared";
-import { getStoredToken } from "@/lib/token";
+import { apiBaseUrl } from "@/lib/client-config";
 
 export type { RunStatus, WorkflowStatus } from "@flowpilot/shared";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface Workflow {
   id: string;
@@ -11,10 +9,12 @@ export interface Workflow {
   name: string;
   description: string;
   status: WorkflowStatus;
-  definition: WorkflowDefinition | {
-    nodes: Array<Record<string, unknown>>;
-    edges: Array<Record<string, unknown>>;
-  };
+  definition:
+    | WorkflowDefinition
+    | {
+        nodes: Array<Record<string, unknown>>;
+        edges: Array<Record<string, unknown>>;
+      };
   tags: string[];
   created_at: string;
   updated_at: string;
@@ -76,23 +76,17 @@ export class ApiError extends Error {
   }
 }
 
-function authHeaders(): HeadersInit {
-  const token = getStoredToken();
-  if (token) {
-    return { Authorization: `Bearer ${token}` };
-  }
-  return {};
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers || {});
-  const auth = authHeaders();
-  Object.entries(auth).forEach(([k, v]) => headers.set(k, v));
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
+  const res = await fetch(`${apiBaseUrl()}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
   if (!res.ok) {
     let detail = res.statusText;
     let code: string | undefined;
@@ -159,4 +153,5 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ name }),
     }),
+  fetchWsToken: () => request<{ access_token: string }>("/auth/ws-token"),
 };

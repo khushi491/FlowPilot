@@ -69,8 +69,7 @@ export function Sidebar() {
           type="button"
           className="mt-2 flex w-full items-center gap-2 rounded-brick border-[3px] border-black bg-lego-red px-2 py-2 text-sm font-bold uppercase text-white shadow-brick-red"
           onClick={() => {
-            logout();
-            router.replace("/login");
+            void logout().finally(() => router.replace("/login"));
           }}
         >
           <LogOut className="h-4 w-4" />
