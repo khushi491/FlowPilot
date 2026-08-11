@@ -24,6 +24,15 @@ async def test_workflow_execution_failure_on_bad_api_url():
 
 
 @pytest.mark.asyncio
+async def test_api_node_blocks_ssrf_localhost():
+    from app.engine.nodes import execute_api
+    from app.engine.url_safety import UnsafeUrlError
+
+    with pytest.raises(UnsafeUrlError):
+        await execute_api({"method": "GET", "url": "http://127.0.0.1/"}, {})
+
+
+@pytest.mark.asyncio
 async def test_condition_routing():
     true_result = await execute_condition({"expression": "score > 50"}, {"score": 80})
     false_result = await execute_condition({"expression": "score > 50"}, {"score": 10})

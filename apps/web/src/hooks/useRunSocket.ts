@@ -27,7 +27,11 @@ export function useRunSocket(runId?: string | null) {
   useEffect(() => {
     if (!runId) return;
     const token = typeof window !== "undefined" ? localStorage.getItem("flowpilot_token") : null;
-    const url = `${WS_URL}/ws/runs/${runId}${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    if (!token) {
+      setConnected(false);
+      return;
+    }
+    const url = `${WS_URL}/ws/runs/${runId}?token=${encodeURIComponent(token)}`;
     const socket = new WebSocket(url);
     socketRef.current = socket;
 

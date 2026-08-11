@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 import httpx
 
 from app.core.config import get_settings
+from app.engine.url_safety import assert_safe_url
 
 settings = get_settings()
 
@@ -79,6 +80,8 @@ async def execute_api(config: dict[str, Any], context: dict[str, Any]) -> dict[s
         if rendered_query:
             separator = "&" if "?" in url else "?"
             url = f"{url}{separator}{urlencode(rendered_query)}"
+
+    assert_safe_url(url)
 
     body = config.get("body")
     json_body = None

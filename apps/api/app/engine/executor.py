@@ -12,6 +12,7 @@ from app.core.config import get_settings
 from app.db.session import AsyncSessionLocal
 from app.engine.events import event_bus
 from app.engine.graph import GraphValidationError, build_adjacency, node_map, validate_definition
+from app.engine.scheduling import build_predecessors, initial_indegree, resolve_after_completion
 from app.engine import nodes as node_exec
 from app.models.enums import NodeRunStatus, RunStatus
 from app.models.workflow import NodeRun, Workflow, WorkflowRun
@@ -63,14 +64,12 @@ async def execute_workflow_run(run_id: UUID) -> None:
 
         nodes = node_map(definition)
         adjacency = build_adjacency(definition)
+        predecessors = build_predecessors(adjacency)
         context: dict[str, Any] = dict(run.input_payload or {})
         final_output: Optional[dict[str, Any]] = None
 
-        # Start from zero-indegree nodes, but honor condition branching.
-        indegree = {nid: 0 for nid in nodes}
-        for edges in adjacency.values():
-            for edge in edges:
-                indegree[edge["target"]] = indegree.get(edge["target"], 0) + 1
+        # Kahn-style ready queue: only enqueue a node once all predecessors resolve.
+        indegree = initial_indegree(adjacency, list(nodes.keys()))
         ready = [nid for nid, deg in indegree.items() if deg == 0]
         executed: set[str] = set()
         skipped: set[str] = set()
@@ -192,20 +191,17 @@ async def execute_workflow_run(run_id: UUID) -> None:
             await db.commit()
             await _emit(run.id, "node.status", {"node_id": node_id, "status": node_run.status, "output": output})
 
-            outgoing = adjacency.get(node_id, [])
-            if node_type == "condition":
-                branch = output.get("branch")
-                for edge in outgoing:
-                    handle = edge.get("sourceHandle")
-                    target = edge["target"]
-                    if handle and handle != branch:
-                        skipped.add(target)
-                        continue
-                    if handle == branch or handle is None:
-                        ready.append(target)
-            else:
-                for edge in outgoing:
-                    ready.append(edge["target"])
+            resolve_after_completion(
+                node_id=node_id,
+                node_type=str(node_type),
+                branch=output.get("branch") if node_type == "condition" else None,
+                adjacency=adjacency,
+                predecessors=predecessors,
+                indegree=indegree,
+                ready=ready,
+                skipped=skipped,
+                executed=executed,
+            )
 
         run.status = RunStatus.completed.value
         run.output_payload = final_output or {"context": context}

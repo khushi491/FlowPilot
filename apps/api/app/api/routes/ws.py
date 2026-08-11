@@ -14,7 +14,24 @@ router = APIRouter()
 
 @router.websocket("/ws/runs/{run_id}")
 async def workflow_run_ws(websocket: WebSocket, run_id: str, token: Optional[str] = None):
+    # Prefer query token (browser WebSocket limitation); also accept Authorization header.
+    if not token:
+        auth = websocket.headers.get("authorization") or websocket.headers.get("Authorization")
+        if auth and auth.lower().startswith("bearer "):
+            token = auth.split(" ", 1)[1].strip()
+
     await websocket.accept()
+
+    if not token:
+        await websocket.send_json({"type": "error", "message": "Authentication required"})
+        await websocket.close(code=4401)
+        return
+
+    user_id = decode_access_token(token)
+    if not user_id:
+        await websocket.send_json({"type": "error", "message": "Invalid token"})
+        await websocket.close(code=4401)
+        return
 
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(WorkflowRun).where(WorkflowRun.id == run_id))
@@ -24,12 +41,10 @@ async def workflow_run_ws(websocket: WebSocket, run_id: str, token: Optional[str
             await websocket.close(code=4404)
             return
 
-        if token:
-            user_id = decode_access_token(token)
-            if user_id and run.user_id != user_id:
-                await websocket.send_json({"type": "error", "message": "Forbidden"})
-                await websocket.close(code=4403)
-                return
+        if run.user_id != user_id:
+            await websocket.send_json({"type": "error", "message": "Forbidden"})
+            await websocket.close(code=4403)
+            return
 
         await websocket.send_json(
             {
