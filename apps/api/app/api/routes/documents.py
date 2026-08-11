@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, parse_uuid
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.rate_limit import rate_limit_upload
 from app.db.session import get_db
 from app.models.document import Document
 from app.models.user import User
@@ -48,6 +49,7 @@ async def upload_document(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    _: None = Depends(rate_limit_upload),
 ):
     if not file.filename:
         raise AppError("Filename is required", code="invalid_file")

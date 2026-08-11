@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.errors import AppError
+from app.core.rate_limit import rate_limit_auth
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.user import User
@@ -15,7 +16,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", response_model=TokenResponse, status_code=201)
-async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
+async def signup(
+    payload: SignupRequest,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(rate_limit_auth),
+):
     existing = await db.execute(select(User).where(User.email == payload.email.lower()))
     if existing.scalar_one_or_none():
         raise AppError("Email already registered", status_code=409, code="email_taken")
@@ -33,7 +38,11 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(
+    payload: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(rate_limit_auth),
+):
     result = await db.execute(select(User).where(User.email == payload.email.lower()))
     user = result.scalar_one_or_none()
     if not user or not verify_password(payload.password, user.hashed_password):

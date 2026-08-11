@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, parse_uuid
+from app.core.rate_limit import rate_limit_run
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.db.session import get_db
@@ -173,6 +174,7 @@ async def create_run(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    _: None = Depends(rate_limit_run),
 ):
     workflow = await _get_owned_workflow(db, user.id, workflow_id)
     _ensure_valid_definition(workflow.definition or {"nodes": [], "edges": []}, require_nodes=True)
