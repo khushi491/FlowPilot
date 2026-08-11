@@ -8,22 +8,30 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { api, Workflow as WorkflowType } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 
+const PAGE_SIZE = 20;
+
 export default function WorkflowsPage() {
   const router = useRouter();
   const [workflows, setWorkflows] = useState<WorkflowType[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const load = async () => {
+  const load = async (nextOffset = offset) => {
     setLoading(true);
     setError(null);
     try {
-      setWorkflows(await api.listWorkflows());
+      const page = await api.listWorkflows({ limit: PAGE_SIZE, offset: nextOffset });
+      setWorkflows(page.items);
+      setTotal(page.total);
+      setOffset(page.offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load workflows");
     } finally {
@@ -32,7 +40,8 @@ export default function WorkflowsPage() {
   };
 
   useEffect(() => {
-    void load();
+    void load(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createWorkflow = async () => {
@@ -64,7 +73,7 @@ export default function WorkflowsPage() {
       }
     >
       {loading ? <LoadingState label="Loading workflows..." /> : null}
-      {error ? <ErrorState message={error} onRetry={load} /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void load(offset)} /> : null}
       {!loading && !error && workflows.length === 0 ? (
         <EmptyState
           icon={Workflow}
@@ -83,34 +92,42 @@ export default function WorkflowsPage() {
         />
       ) : null}
       {!loading && !error && workflows.length > 0 ? (
-        <div className="panel overflow-hidden">
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Nodes</th>
-                <th className="px-4 py-3 font-medium">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workflows.map((wf) => (
-                <tr key={wf.id} className="border-t border-slate-100 hover:bg-teal-50/40">
-                  <td className="px-4 py-3">
-                    <Link href={`/workflows/${wf.id}`} className="font-medium text-slate-900 hover:text-teal-700">
-                      {wf.name}
-                    </Link>
-                    <p className="text-xs text-slate-500">{wf.description || "—"}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={wf.status} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{wf.definition?.nodes?.length ?? 0}</td>
-                  <td className="px-4 py-3 text-slate-600">{formatDate(wf.updated_at)}</td>
+        <div>
+          <div className="panel overflow-hidden">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Nodes</th>
+                  <th className="px-4 py-3 font-medium">Updated</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {workflows.map((wf) => (
+                  <tr key={wf.id} className="border-t border-slate-100 hover:bg-teal-50/40">
+                    <td className="px-4 py-3">
+                      <Link href={`/workflows/${wf.id}`} className="font-medium text-slate-900 hover:text-teal-700">
+                        {wf.name}
+                      </Link>
+                      <p className="text-xs text-slate-500">{wf.description || "—"}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={wf.status} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{wf.definition?.nodes?.length ?? 0}</td>
+                    <td className="px-4 py-3 text-slate-600">{formatDate(wf.updated_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationControls
+            total={total}
+            limit={PAGE_SIZE}
+            offset={offset}
+            onChange={(next) => void load(next)}
+          />
         </div>
       ) : null}
     </DashboardShell>

@@ -22,3 +22,5 @@ class MessageResponse(BaseModel):
 class PaginatedResponse(BaseModel, Generic[T]):
     items: list[T]
     total: int
+    limit: int
+    offset: int

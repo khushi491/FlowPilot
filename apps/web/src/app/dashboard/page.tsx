@@ -12,6 +12,7 @@ import { api, Workflow, WorkflowRun } from "@/lib/api";
 export default function DashboardPage() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [runs, setRuns] = useState<WorkflowRun[]>([]);
+  const [workflowTotal, setWorkflowTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,9 +20,13 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [w, r] = await Promise.all([api.listWorkflows(), api.listRuns()]);
-      setWorkflows(w);
-      setRuns(r.slice(0, 5));
+      const [w, r] = await Promise.all([
+        api.listWorkflows({ limit: 5, offset: 0 }),
+        api.listRuns({ limit: 5, offset: 0 }),
+      ]);
+      setWorkflows(w.items);
+      setRuns(r.items);
+      setWorkflowTotal(w.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard");
     } finally {
@@ -50,10 +55,10 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { label: "Workflows", value: workflows.length, icon: WorkflowIcon },
+              { label: "Workflows", value: workflowTotal, icon: WorkflowIcon },
               { label: "Recent runs", value: runs.length, icon: PlayCircle },
               {
-                label: "Active",
+                label: "Active (page)",
                 value: workflows.filter((w) => w.status === "active").length,
                 icon: FileText,
               },
@@ -79,7 +84,7 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500">No workflows yet. Create your first automation.</p>
             ) : (
               <ul className="divide-y divide-slate-100">
-                {workflows.slice(0, 5).map((wf) => (
+                {workflows.map((wf) => (
                   <li key={wf.id} className="flex items-center justify-between py-3">
                     <div>
                       <Link href={`/workflows/${wf.id}`} className="font-medium text-slate-900 hover:text-teal-700">

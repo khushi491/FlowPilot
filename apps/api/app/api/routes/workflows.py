@@ -1,8 +1,8 @@
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, BackgroundTasks, Depends
-from sqlalchemy import select
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, parse_uuid
@@ -13,6 +13,7 @@ from app.engine.executor import enqueue_run
 from app.engine.graph import GraphValidationError, validate_definition
 from app.models.user import User
 from app.models.workflow import Workflow, WorkflowRun, WorkflowVersion
+from app.schemas.common import PaginatedResponse
 from app.schemas.workflow import RunCreate, WorkflowCreate, WorkflowOut, WorkflowRunOut, WorkflowUpdate
 
 router = APIRouter()
@@ -68,19 +69,34 @@ async def create_workflow(
     return workflow
 
 
-@router.get("/workflows", response_model=list[WorkflowOut])
+@router.get("/workflows", response_model=PaginatedResponse[WorkflowOut])
 async def list_workflows(
     status: Optional[str] = None,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    query = select(Workflow).where(Workflow.user_id == user.id).order_by(Workflow.updated_at.desc())
+    filters = [Workflow.user_id == user.id]
     if status:
         if status not in ALLOWED_STATUSES:
             raise AppError("Invalid workflow status filter", code="invalid_status")
-        query = query.where(Workflow.status == status)
-    result = await db.execute(query)
-    return list(result.scalars().all())
+        filters.append(Workflow.status == status)
+
+    total = await db.scalar(select(func.count()).select_from(Workflow).where(*filters))
+    result = await db.execute(
+        select(Workflow)
+        .where(*filters)
+        .order_by(Workflow.updated_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return PaginatedResponse(
+        items=list(result.scalars().all()),
+        total=int(total or 0),
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/workflows/{workflow_id}", response_model=WorkflowOut)

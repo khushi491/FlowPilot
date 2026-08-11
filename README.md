@@ -231,9 +231,9 @@ Interactive docs: http://localhost:8000/docs
 | Area | Endpoints |
 |------|-----------|
 | Auth | `POST /auth/signup`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
-| Workflows | `POST/GET/PUT/DELETE /workflows` |
+| Workflows | `POST/GET/PUT/DELETE /workflows` (list is paginated: `limit`/`offset`) |
 | Runs | `POST /workflows/{id}/runs`, `GET /runs`, `GET /runs/{id}`, `GET /runs/{id}/nodes`, `POST /runs/{id}/decision` |
-| Documents | `POST /documents/upload`, `GET /documents`, `DELETE /documents/{id}` |
+| Documents | `POST /documents/upload`, `GET /documents`, `DELETE /documents/{id}` (list paginated) |
 | Templates | `GET /templates`, `POST /templates/{id}/use` |
 | Realtime | `WS /ws/runs/{id}` |
 | Health | `GET /health` |

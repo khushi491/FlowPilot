@@ -57,6 +57,13 @@ export interface Template {
   definition: Workflow["definition"];
 }
 
+export interface Page<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export class ApiError extends Error {
   status: number;
   code?: string;
@@ -106,8 +113,20 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function withQuery(path: string, params?: Record<string, string | number | undefined>) {
+  if (!params) return path;
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === "") return;
+    qs.set(key, String(value));
+  });
+  const query = qs.toString();
+  return query ? `${path}?${query}` : path;
+}
+
 export const api = {
-  listWorkflows: () => request<Workflow[]>("/workflows"),
+  listWorkflows: (params?: { status?: string; limit?: number; offset?: number }) =>
+    request<Page<Workflow>>(withQuery("/workflows", params)),
   getWorkflow: (id: string) => request<Workflow>(`/workflows/${id}`),
   createWorkflow: (body: Partial<Workflow>) =>
     request<Workflow>("/workflows", { method: "POST", body: JSON.stringify(body) }),
@@ -119,10 +138,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ input }),
     }),
-  listRuns: (params?: { status?: string }) => {
-    const q = params?.status ? `?status=${encodeURIComponent(params.status)}` : "";
-    return request<WorkflowRun[]>(`/runs${q}`);
-  },
+  listRuns: (params?: { status?: string; limit?: number; offset?: number }) =>
+    request<Page<WorkflowRun>>(withQuery("/runs", params)),
   getRun: (id: string) => request<WorkflowRun>(`/runs/${id}`),
   getRunNodes: (id: string) => request<Array<Record<string, unknown>>>(`/runs/${id}/nodes`),
   decideRun: (id: string, approved: boolean, note = "") =>
@@ -130,7 +147,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ approved, note }),
     }),
-  listDocuments: () => request<DocumentItem[]>("/documents"),
+  listDocuments: (params?: { limit?: number; offset?: number }) =>
+    request<Page<DocumentItem>>(withQuery("/documents", params)),
   uploadDocument: (file: File) => {
     const form = new FormData();
     form.append("file", file);

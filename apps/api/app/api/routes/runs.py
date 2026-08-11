@@ -1,7 +1,7 @@
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends
-from sqlalchemy import select
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -13,26 +13,42 @@ from app.engine.executor import enqueue_decision
 from app.models.enums import RunStatus
 from app.models.user import User
 from app.models.workflow import NodeRun, WorkflowRun
+from app.schemas.common import PaginatedResponse
 from app.schemas.workflow import NodeRunOut, RunDecision, WorkflowRunOut
 
 router = APIRouter()
 settings = get_settings()
 
 
-@router.get("/runs", response_model=list[WorkflowRunOut])
+@router.get("/runs", response_model=PaginatedResponse[WorkflowRunOut])
 async def list_runs(
     status: Optional[str] = None,
     workflow_id: Optional[str] = None,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    query = select(WorkflowRun).where(WorkflowRun.user_id == user.id).order_by(WorkflowRun.created_at.desc())
+    filters = [WorkflowRun.user_id == user.id]
     if status:
-        query = query.where(WorkflowRun.status == status)
+        filters.append(WorkflowRun.status == status)
     if workflow_id:
-        query = query.where(WorkflowRun.workflow_id == parse_uuid(workflow_id, "workflow_id"))
-    result = await db.execute(query)
-    return list(result.scalars().all())
+        filters.append(WorkflowRun.workflow_id == parse_uuid(workflow_id, "workflow_id"))
+
+    total = await db.scalar(select(func.count()).select_from(WorkflowRun).where(*filters))
+    result = await db.execute(
+        select(WorkflowRun)
+        .where(*filters)
+        .order_by(WorkflowRun.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return PaginatedResponse(
+        items=list(result.scalars().all()),
+        total=int(total or 0),
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/runs/{run_id}", response_model=WorkflowRunOut)

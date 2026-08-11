@@ -1,8 +1,8 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, UploadFile
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, parse_uuid
@@ -11,6 +11,7 @@ from app.core.errors import AppError
 from app.db.session import get_db
 from app.models.document import Document
 from app.models.user import User
+from app.schemas.common import PaginatedResponse
 from app.schemas.workflow import DocumentOut
 from app.services.rag import process_document
 
@@ -99,15 +100,28 @@ async def upload_document(
     return document
 
 
-@router.get("/documents", response_model=list[DocumentOut])
+@router.get("/documents", response_model=PaginatedResponse[DocumentOut])
 async def list_documents(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    filters = [Document.user_id == user.id]
+    total = await db.scalar(select(func.count()).select_from(Document).where(*filters))
     result = await db.execute(
-        select(Document).where(Document.user_id == user.id).order_by(Document.created_at.desc())
+        select(Document)
+        .where(*filters)
+        .order_by(Document.created_at.desc())
+        .limit(limit)
+        .offset(offset)
     )
-    return list(result.scalars().all())
+    return PaginatedResponse(
+        items=list(result.scalars().all()),
+        total=int(total or 0),
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.delete("/documents/{document_id}", status_code=204)

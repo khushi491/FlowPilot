@@ -6,20 +6,28 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import { api, DocumentItem } from "@/lib/api";
 import { formatBytes, formatDate } from "@/lib/utils";
 
+const PAGE_SIZE = 20;
+
 export default function DocumentsPage() {
   const [docs, setDocs] = useState<DocumentItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const load = async () => {
+  const load = async (nextOffset = offset) => {
     setLoading(true);
     setError(null);
     try {
-      setDocs(await api.listDocuments());
+      const page = await api.listDocuments({ limit: PAGE_SIZE, offset: nextOffset });
+      setDocs(page.items);
+      setTotal(page.total);
+      setOffset(page.offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load documents");
     } finally {
@@ -28,7 +36,8 @@ export default function DocumentsPage() {
   };
 
   useEffect(() => {
-    void load();
+    void load(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onUpload = async (file?: File | null) => {
@@ -37,7 +46,7 @@ export default function DocumentsPage() {
     setError(null);
     try {
       await api.uploadDocument(file);
-      await load();
+      await load(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -48,7 +57,7 @@ export default function DocumentsPage() {
   const onDelete = async (id: string) => {
     try {
       await api.deleteDocument(id);
-      setDocs((prev) => prev.filter((d) => d.id !== id));
+      await load(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delete failed");
     }
@@ -73,7 +82,7 @@ export default function DocumentsPage() {
       }
     >
       {loading ? <LoadingState label="Loading documents..." /> : null}
-      {error ? <ErrorState message={error} onRetry={load} /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void load(offset)} /> : null}
       {!loading && !error && docs.length === 0 ? (
         <EmptyState
           icon={FileText}
@@ -82,38 +91,46 @@ export default function DocumentsPage() {
         />
       ) : null}
       {!loading && !error && docs.length > 0 ? (
-        <div className="panel overflow-hidden">
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">File</th>
-                <th className="px-4 py-3 font-medium">Size</th>
-                <th className="px-4 py-3 font-medium">Chunks</th>
-                <th className="px-4 py-3 font-medium">Uploaded</th>
-                <th className="px-4 py-3 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {docs.map((doc) => (
-                <tr key={doc.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3 font-medium text-slate-900">{doc.filename}</td>
-                  <td className="px-4 py-3 text-slate-600">{formatBytes(doc.size_bytes)}</td>
-                  <td className="px-4 py-3 text-slate-600">{doc.chunk_count}</td>
-                  <td className="px-4 py-3 text-slate-600">{formatDate(doc.created_at)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      className="rounded-md p-2 text-rose-600 hover:bg-rose-50"
-                      onClick={() => void onDelete(doc.id)}
-                      aria-label={`Delete ${doc.filename}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
+        <div>
+          <div className="panel overflow-hidden">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">File</th>
+                  <th className="px-4 py-3 font-medium">Size</th>
+                  <th className="px-4 py-3 font-medium">Chunks</th>
+                  <th className="px-4 py-3 font-medium">Uploaded</th>
+                  <th className="px-4 py-3 font-medium" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {docs.map((doc) => (
+                  <tr key={doc.id} className="border-t border-slate-100">
+                    <td className="px-4 py-3 font-medium text-slate-900">{doc.filename}</td>
+                    <td className="px-4 py-3 text-slate-600">{formatBytes(doc.size_bytes)}</td>
+                    <td className="px-4 py-3 text-slate-600">{doc.chunk_count}</td>
+                    <td className="px-4 py-3 text-slate-600">{formatDate(doc.created_at)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        className="rounded-md p-2 text-rose-600 hover:bg-rose-50"
+                        onClick={() => void onDelete(doc.id)}
+                        aria-label={`Delete ${doc.filename}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationControls
+            total={total}
+            limit={PAGE_SIZE}
+            offset={offset}
+            onChange={(next) => void load(next)}
+          />
         </div>
       ) : null}
     </DashboardShell>
