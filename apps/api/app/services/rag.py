@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.document import Document, DocumentChunk
 from app.services.chunking import chunk_text
-from app.services.embeddings import cosine_similarity, embed_texts, mock_embed
+from app.services.embeddings import embed_texts
 
 
 def extract_text_from_file(path: Path, content_type: str) -> str:
@@ -58,37 +58,37 @@ async def process_document(db: AsyncSession, document: Document) -> Document:
     return document
 
 
+def distance_to_score(distance: float) -> float:
+    """Convert pgvector cosine distance to a similarity score in roughly [0, 1]."""
+    return max(0.0, 1.0 - float(distance))
+
+
 async def retrieve_chunks(
     db: AsyncSession,
     user_id: UUID,
     query: str,
     top_k: int = 4,
 ) -> list[dict[str, Any]]:
+    """Retrieve top-k chunks with pgvector cosine ANN (ORDER BY embedding <=> query)."""
+    top_k = max(1, min(int(top_k), 50))
+    query_embedding = (await embed_texts([query]))[0]
+    distance = DocumentChunk.embedding.cosine_distance(query_embedding)
+
     result = await db.execute(
-        select(DocumentChunk)
+        select(DocumentChunk, distance.label("distance"))
         .join(Document, Document.id == DocumentChunk.document_id)
         .where(Document.user_id == user_id)
+        .where(DocumentChunk.embedding.is_not(None))
+        .order_by(distance)
+        .limit(top_k)
     )
-    chunks = list(result.scalars().all())
-    if not chunks:
-        return []
-
-    query_embedding = (await embed_texts([query]))[0]
-    scored: list[tuple[float, DocumentChunk]] = []
-    for chunk in chunks:
-        if chunk.embedding is not None:
-            score = cosine_similarity(list(chunk.embedding), query_embedding)
-        else:
-            score = cosine_similarity(mock_embed(chunk.content), query_embedding)
-        scored.append((score, chunk))
-
-    scored.sort(key=lambda item: item[0], reverse=True)
+    rows = result.all()
     return [
         {
             "content": chunk.content,
             "document_id": str(chunk.document_id),
             "chunk_index": chunk.chunk_index,
-            "score": float(score),
+            "score": distance_to_score(dist),
         }
-        for score, chunk in scored[:top_k]
+        for chunk, dist in rows
     ]

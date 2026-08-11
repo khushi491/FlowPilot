@@ -116,7 +116,7 @@ FlowPilot/
 ### RAG
 - Upload TXT / MD / PDF
 - Text extraction, chunking, embeddings
-- pgvector-ready storage
+- pgvector cosine ANN retrieval (`embedding <=> query`) with HNSW index
 - Mock embeddings by default (no API key required)
 
 ### Templates
