@@ -9,6 +9,7 @@ from app.api.deps import get_current_user, parse_uuid
 from app.core.errors import AppError
 from app.db.session import get_db
 from app.engine.executor import enqueue_run
+from app.engine.graph import GraphValidationError, validate_definition
 from app.models.user import User
 from app.models.workflow import Workflow, WorkflowRun, WorkflowVersion
 from app.schemas.workflow import RunCreate, WorkflowCreate, WorkflowOut, WorkflowRunOut, WorkflowUpdate
@@ -16,6 +17,17 @@ from app.schemas.workflow import RunCreate, WorkflowCreate, WorkflowOut, Workflo
 router = APIRouter()
 
 ALLOWED_STATUSES = {"draft", "active", "paused", "failed"}
+
+
+def _ensure_valid_definition(definition: dict, *, require_nodes: bool = False) -> None:
+    """Validate graph structure. Empty drafts are allowed unless require_nodes is set."""
+    nodes = definition.get("nodes") or []
+    if not nodes and not require_nodes:
+        return
+    try:
+        validate_definition(definition)
+    except GraphValidationError as exc:
+        raise AppError(exc.message, status_code=422, code="invalid_definition") from exc
 
 
 @router.post("/workflows", response_model=WorkflowOut, status_code=201)
@@ -26,6 +38,9 @@ async def create_workflow(
 ):
     if payload.status not in ALLOWED_STATUSES:
         raise AppError("Invalid workflow status", code="invalid_status")
+
+    require_nodes = payload.status == "active"
+    _ensure_valid_definition(payload.definition, require_nodes=require_nodes)
 
     workflow = Workflow(
         id=uuid4(),
@@ -88,6 +103,12 @@ async def update_workflow(
     if "status" in data and data["status"] not in ALLOWED_STATUSES:
         raise AppError("Invalid workflow status", code="invalid_status")
 
+    next_definition = data.get("definition", workflow.definition) or {"nodes": [], "edges": []}
+    next_status = data.get("status", workflow.status)
+    require_nodes = next_status == "active"
+    if "definition" in data or require_nodes:
+        _ensure_valid_definition(next_definition, require_nodes=require_nodes)
+
     definition_changed = "definition" in data
     for key, value in data.items():
         setattr(workflow, key, value)
@@ -136,6 +157,8 @@ async def create_run(
     user: User = Depends(get_current_user),
 ):
     workflow = await _get_owned_workflow(db, user.id, workflow_id)
+    _ensure_valid_definition(workflow.definition or {"nodes": [], "edges": []}, require_nodes=True)
+
     run = WorkflowRun(
         id=uuid4(),
         workflow_id=workflow.id,
