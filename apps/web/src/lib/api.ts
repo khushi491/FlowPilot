@@ -124,6 +124,11 @@ export const api = {
   },
   getRun: (id: string) => request<WorkflowRun>(`/runs/${id}`),
   getRunNodes: (id: string) => request<Array<Record<string, unknown>>>(`/runs/${id}/nodes`),
+  decideRun: (id: string, approved: boolean, note = "") =>
+    request<WorkflowRun>(`/runs/${id}/decision`, {
+      method: "POST",
+      body: JSON.stringify({ approved, note }),
+    }),
   listDocuments: () => request<DocumentItem[]>("/documents"),
   uploadDocument: (file: File) => {
     const form = new FormData();

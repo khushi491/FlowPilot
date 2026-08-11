@@ -39,6 +39,11 @@ class RunCreate(BaseModel):
     input: dict[str, Any] = Field(default_factory=dict)
 
 
+class RunDecision(BaseModel):
+    approved: bool
+    note: str = Field(default="", max_length=2000)
+
+
 class WorkflowRunOut(ORMModel):
     id: UUID
     workflow_id: UUID

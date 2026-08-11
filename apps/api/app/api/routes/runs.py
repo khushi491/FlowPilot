@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -8,9 +8,11 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import get_current_user, parse_uuid
 from app.core.errors import AppError
 from app.db.session import get_db
+from app.engine.executor import enqueue_decision
+from app.models.enums import RunStatus
 from app.models.user import User
 from app.models.workflow import NodeRun, WorkflowRun
-from app.schemas.workflow import NodeRunOut, WorkflowRunOut
+from app.schemas.workflow import NodeRunOut, RunDecision, WorkflowRunOut
 
 router = APIRouter()
 
@@ -52,6 +54,34 @@ async def get_run_nodes(
         select(NodeRun).where(NodeRun.workflow_run_id == run.id).order_by(NodeRun.created_at.asc())
     )
     return list(result.scalars().all())
+
+
+@router.post("/runs/{run_id}/decision", response_model=WorkflowRunOut)
+async def decide_run(
+    run_id: str,
+    payload: RunDecision,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    run = await _get_owned_run(db, user.id, run_id)
+    if run.status != RunStatus.paused.value:
+        raise AppError("Run is not waiting for approval", status_code=409, code="not_paused")
+
+    pause = (run.output_payload or {}).get("_pause") if isinstance(run.output_payload, dict) else None
+    if not pause:
+        raise AppError("Run is missing an approval checkpoint", status_code=409, code="missing_checkpoint")
+
+    background_tasks.add_task(enqueue_decision, run.id, payload.approved, payload.note)
+    run.logs = list(run.logs or []) + [
+        {
+            "level": "info",
+            "message": "Approval decision accepted" if payload.approved else "Rejection accepted",
+        }
+    ]
+    await db.commit()
+    await db.refresh(run)
+    return run
 
 
 async def _get_owned_run(db: AsyncSession, user_id, run_id: str) -> WorkflowRun:
