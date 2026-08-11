@@ -17,6 +17,30 @@ from app.services.rag import process_document
 router = APIRouter()
 settings = get_settings()
 
+ALLOWED_EXTENSIONS = {".txt", ".md", ".markdown", ".pdf"}
+ALLOWED_CONTENT_TYPES = {
+    "text/plain",
+    "text/markdown",
+    "application/pdf",
+    "application/octet-stream",
+}
+
+
+def _detect_kind(filename: str, content_type: str, raw: bytes) -> str:
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise AppError("Only .txt, .md, and .pdf files are supported", code="unsupported_type")
+    if content_type not in ALLOWED_CONTENT_TYPES and not content_type.startswith("text/"):
+        raise AppError("Unsupported content type", code="unsupported_type")
+
+    if suffix == ".pdf" or content_type == "application/pdf":
+        if not raw.startswith(b"%PDF"):
+            raise AppError("File content does not look like a PDF", code="invalid_file")
+        return "pdf"
+    if suffix in {".md", ".markdown"}:
+        return "markdown"
+    return "text"
+
 
 @router.post("/documents/upload", response_model=DocumentOut, status_code=201)
 async def upload_document(
@@ -27,24 +51,25 @@ async def upload_document(
     if not file.filename:
         raise AppError("Filename is required", code="invalid_file")
 
-    content_type = file.content_type or "application/octet-stream"
-    allowed = {
-        "text/plain",
-        "application/pdf",
-        "text/markdown",
-        "application/octet-stream",
-    }
-    if content_type not in allowed and not file.filename.lower().endswith((".txt", ".md", ".pdf")):
-        raise AppError("Only text, markdown, and PDF files are supported", code="unsupported_type")
+    safe_name = Path(file.filename).name
+    if not safe_name or safe_name in {".", ".."}:
+        raise AppError("Invalid filename", code="invalid_file")
 
-    raw = await file.read()
+    content_type = file.content_type or "application/octet-stream"
+    raw = await file.read(settings.max_upload_bytes + 1)
+    if len(raw) > settings.max_upload_bytes:
+        raise AppError(
+            f"File exceeds maximum size of {settings.max_upload_bytes} bytes",
+            code="file_too_large",
+        )
     if not raw:
         raise AppError("Uploaded file is empty", code="empty_file")
+
+    kind = _detect_kind(safe_name, content_type, raw)
 
     upload_root = Path(settings.upload_dir)
     upload_root.mkdir(parents=True, exist_ok=True)
     doc_id = uuid.uuid4()
-    safe_name = Path(file.filename).name
     storage_path = upload_root / f"{doc_id}_{safe_name}"
     storage_path.write_bytes(raw)
 
@@ -57,7 +82,7 @@ async def upload_document(
         storage_path=str(storage_path),
         text_content="",
         chunk_count=0,
-        meta={"status": "uploaded"},
+        meta={"status": "uploaded", "kind": kind},
     )
     db.add(document)
     await db.commit()
